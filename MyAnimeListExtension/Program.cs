@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Windows.AppLifecycle;
+using MyAnimeListExtension.Authentication;
 using Windows.ApplicationModel.Activation;
 
 namespace MyAnimeListExtension;
@@ -91,8 +92,6 @@ public class Program
         Console.WriteLine(res);
         Debug.WriteLine("Eu existo?");
         Debug.WriteLine(res);
-
-        OAuthClient.BeginOAuthRequest();
 
         // We are instantiating an extension instance once above, and returning it every time the callback in RegisterExtension below is called.
         // This makes sure that only one instance of SampleExtension is alive, which is returned every time the host asks for the IExtension object.

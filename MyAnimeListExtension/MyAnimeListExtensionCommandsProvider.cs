@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Pages;
 
 namespace MyAnimeListExtension;
@@ -25,6 +26,10 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
             {
                 Title = "Suggested anime",
             },
+            new CommandItem(new SignInCommand()){
+                Title = "My Anime List Extension",
+                Subtitle = "Sign in to My Anime List",
+            }
         ];
     }
 
