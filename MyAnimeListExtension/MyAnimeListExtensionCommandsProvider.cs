@@ -4,6 +4,7 @@
 
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MyAnimeListExtension.Pages;
 
 namespace MyAnimeListExtension;
 
@@ -16,7 +17,10 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
         DisplayName = "My Anime List";
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
         _commands = [
-            new CommandItem(new MyAnimeListExtensionPage()) { Title = DisplayName },
+            new CommandItem(new TopAnimePage())
+            {
+                Title = "Top anime",
+            },
         ];
     }
 

@@ -9,9 +9,9 @@ using MyAnimeListExtension.Models;
 
 namespace MyAnimeListExtension;
 
-internal class DataProvider
+internal sealed class DataProvider
 {
-    private static readonly HttpClient client = new HttpClient();
+    private static readonly HttpClient client = new();
 
     public DataProvider()
     {
@@ -20,7 +20,12 @@ internal class DataProvider
         client.DefaultRequestHeaders.Accept.Clear();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         // Add your API key here
-        client.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", "e04e2ca4d6808e515b85dc14b8687ec1");
+        var apiKey = Environment.GetEnvironmentVariable("MAL_CLIENT_ID");
+        if (string.IsNullOrEmpty(apiKey))
+        {
+            throw new InvalidOperationException("API key is not set in the environment variables.");
+        }
+        client.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", apiKey);
     }
 
     public static async Task<List<Anime>> GetAnimeRankingAsync()
@@ -33,6 +38,12 @@ internal class DataProvider
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+        var prettyJson = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
+#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+        Debug.WriteLine(prettyJson);
+
         JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
 
         var root = jsonDocument.RootElement;
@@ -42,8 +53,9 @@ internal class DataProvider
         {
             var anime = new Anime
             {
-                Title = item.GetProperty("node").GetProperty("title").GetString(),
-                ImageUrl = item.GetProperty("node").GetProperty("main_picture").GetProperty("large").GetString(),
+                Id = item.GetProperty("node").GetProperty("id").GetInt32(),
+                Title = item.GetProperty("node").GetProperty("title").GetString() ?? string.Empty,
+                ImageUrl = item.GetProperty("node").GetProperty("main_picture").GetProperty("large").GetString() ?? string.Empty,
             };
             Debug.WriteLine(anime.Title);
             Debug.WriteLine(anime.ImageUrl);
