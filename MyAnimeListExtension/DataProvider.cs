@@ -28,6 +28,44 @@ internal sealed class DataProvider
         client.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", apiKey);
     }
 
+    public static async Task<List<Anime>> GetSuggestedAnimeAsync()
+    {
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", OAuthClient.AccessToken);
+        HttpResponseMessage response = await client.GetAsync("anime/suggestions");
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
+        }
+
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+
+#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+        var prettyJson = JsonSerializer.Serialize(jsonElement, new JsonSerializerOptions { WriteIndented = true });
+#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+        Debug.WriteLine(prettyJson);
+
+        JsonDocument jsonDocument = JsonDocument.Parse(jsonResponse);
+
+        var root = jsonDocument.RootElement;
+        var data = root.GetProperty("data").EnumerateArray();
+        var res = new List<Anime>();
+        foreach (var item in data)
+        {
+            var anime = new Anime
+            {
+                Id = item.GetProperty("node").GetProperty("id").GetInt32(),
+                Title = item.GetProperty("node").GetProperty("title").GetString() ?? string.Empty,
+                ImageUrl = item.GetProperty("node").GetProperty("main_picture").GetProperty("medium").GetString() ?? string.Empty,
+            };
+            Debug.WriteLine(anime.Title);
+            Debug.WriteLine(anime.ImageUrl);
+            res.Add(anime);
+        }
+
+        return res;
+    }
+
     public static async Task<List<Anime>> GetAnimeRankingAsync()
     {
         HttpResponseMessage response = await client.GetAsync("anime/ranking");

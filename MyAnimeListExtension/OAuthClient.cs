@@ -10,6 +10,8 @@ internal sealed class OAuthClient : IDisposable
 {
     private readonly HttpClient _httpClient;
 
+    public static string AccessToken { get; private set; } = string.Empty;
+
     public OAuthClient()
     {
         _httpClient = new HttpClient();
@@ -83,11 +85,15 @@ internal sealed class OAuthClient : IDisposable
                 new KeyValuePair<string, string>("grant_type", "authorization_code"),
                 new KeyValuePair<string, string>("code", code!),
                 new KeyValuePair<string, string>("client_id", Environment.GetEnvironmentVariable("MAL_CLIENT_ID")!),
-                new KeyValuePair<string, string>("code_verifier", Environment.GetEnvironmentVariable("MAL_CODE_CHALLENGE")!)
-            })
+                new KeyValuePair<string, string>("code_verifier", Environment.GetEnvironmentVariable("MAL_CODE_CHALLENGE")!),
+                new KeyValuePair<string, string>("redirect_uri", "cmdpalmalext://oauth_redirect_uri/"),
+            }),
         };
 
+        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
         Debug.WriteLine($"Request: {request.RequestUri}");
+        Debug.WriteLine($"Content: {await request.Content.ReadAsStringAsync()}");
 
         using var client = new HttpClient();
         try
@@ -101,6 +107,7 @@ internal sealed class OAuthClient : IDisposable
             var accessToken = responseJson.RootElement.GetProperty("access_token").GetString();
             var refreshToken = responseJson.RootElement.GetProperty("refresh_token").GetString();
             var expiresIn = responseJson.RootElement.GetProperty("expires_in").GetInt32();
+            AccessToken = accessToken!;
 
             Debug.WriteLine($"Access Token: {accessToken}");
             Debug.WriteLine($"Refresh Token: {refreshToken}");

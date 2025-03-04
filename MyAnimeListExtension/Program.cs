@@ -4,6 +4,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
@@ -17,6 +18,7 @@ public class Program
     [MTAThread]
     public static async Task Main(string[] args)
     {
+        Debug.WriteLine($"Launched with args: {string.Join(' ', args.ToArray())}");
 
         // Force the app to be single instanced.
         // Get or register the main instance.

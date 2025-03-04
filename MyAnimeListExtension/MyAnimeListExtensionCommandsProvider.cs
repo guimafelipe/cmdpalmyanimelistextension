@@ -21,6 +21,10 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
             {
                 Title = "Top anime",
             },
+            new CommandItem(new SuggestedAnimePage())
+            {
+                Title = "Suggested anime",
+            },
         ];
     }
 
