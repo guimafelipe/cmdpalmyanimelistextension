@@ -102,5 +102,5 @@ public class Program
         extensionDisposedEvent.WaitOne();
     }
 
-    private static void HandleProtocolActivation(Uri oauthRedirectUri) => OAuthClient.HandleOAuthRedirection(oauthRedirectUri);
+    private static void HandleProtocolActivation(Uri oauthRedirectUri) => _ = OAuthClient.HandleOAuthRedirection(oauthRedirectUri);
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MyAnimeListExtension;
@@ -20,6 +21,11 @@ internal sealed class OAuthClient : IDisposable
         var code_challenge = Environment.GetEnvironmentVariable("MAL_CODE_CHALLENGE");
         var redirect_uri = "cmdpalmalext://oauth_redirect_uri/";
         return new Uri($"https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id={client_id}&code_challenge={code_challenge}&state=state&redirect_uri={redirect_uri}");
+    }
+
+    private static Uri CreateRequestTokenUri()
+    {
+        return new Uri($"https://myanimelist.net/v1/oauth2/token");
     }
 
     public static void BeginOAuthRequest()
@@ -43,29 +49,75 @@ internal sealed class OAuthClient : IDisposable
         });
     }
 
-    public static void HandleOAuthRedirection(Uri response)
+
+    public static async Task HandleOAuthRedirection(Uri response)
     {
         var queryString = response.Query;
-        var queryStringColleection = System.Web.HttpUtility.ParseQueryString(queryString);
+        var queryStringCollection = System.Web.HttpUtility.ParseQueryString(queryString);
 
-        if (queryStringColleection["error"] != null)
+        if (queryStringCollection["error"] != null)
         {
             // Handle error
-            Debug.WriteLine($"Error: {queryStringColleection["error"]}");
+            Debug.WriteLine($"Error: {queryStringCollection["error"]}");
             return;
         }
 
-        if (queryStringColleection["code"] == null)
+        if (queryStringCollection["code"] == null)
         {
             Debug.WriteLine("No code found in the response.");
             return;
         }
 
         // Handle success
-        var code = queryStringColleection["code"];
+        var code = queryStringCollection["code"];
         Debug.WriteLine($"Code: {code}");
 
         // Use the code to get the access token
+        var tokenUri = CreateRequestTokenUri();
+
+        var request = new HttpRequestMessage(HttpMethod.Post, tokenUri)
+        {
+            Content =
+            new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "authorization_code"),
+                new KeyValuePair<string, string>("code", code!),
+                new KeyValuePair<string, string>("client_id", Environment.GetEnvironmentVariable("MAL_CLIENT_ID")!),
+                new KeyValuePair<string, string>("code_verifier", Environment.GetEnvironmentVariable("MAL_CODE_CHALLENGE")!)
+            })
+        };
+
+        Debug.WriteLine($"Request: {request.RequestUri}");
+
+        using var client = new HttpClient();
+        try
+        {
+            var responseMessage = await client.SendAsync(request);
+            responseMessage.EnsureSuccessStatusCode();
+
+            var responseContent = await responseMessage.Content.ReadAsStringAsync();
+            var responseJson = JsonDocument.Parse(responseContent);
+
+            var accessToken = responseJson.RootElement.GetProperty("access_token").GetString();
+            var refreshToken = responseJson.RootElement.GetProperty("refresh_token").GetString();
+            var expiresIn = responseJson.RootElement.GetProperty("expires_in").GetInt32();
+
+            Debug.WriteLine($"Access Token: {accessToken}");
+            Debug.WriteLine($"Refresh Token: {refreshToken}");
+            Debug.WriteLine($"Expires In: {expiresIn}");
+        }
+        catch (HttpRequestException ex)
+        {
+            Debug.WriteLine($"Request failed: {ex.Message}");
+        }
+        catch (JsonException ex)
+        {
+            Debug.WriteLine($"JSON parsing failed: {ex.Message}");
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine($"Unexpected error: {ex.Message}");
+        }
 
     }
 
