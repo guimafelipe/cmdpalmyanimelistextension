@@ -1,4 +1,6 @@
 ﻿using System.Net;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace MyAnimeListExtension.Authentication;
 
@@ -34,6 +36,11 @@ public sealed class TokenService
         OAuthClient.BeginOAuthRequest();
     }
 
+    public static void LogoutUser()
+    {
+        credentialVault.RemoveAllCredentials();
+    }
+
     public static void OAuthTokenEventHandler(object? sender, OAuthEventArgs e)
     {
         if(e.Error != null)
@@ -43,5 +50,13 @@ public sealed class TokenService
 
         SaveOrOverwriteAccessToken(e.AccessToken!);
         SaveOrOverwriteRefreshToken(e.RefreshToken!);
+
+        var toast = new ToastStatusMessage(new StatusMessage()
+        {
+            Message = "Successfully logged in to MyAnimeList",
+            State = MessageState.Success
+        });
+
+        toast.Show();
     }
 }

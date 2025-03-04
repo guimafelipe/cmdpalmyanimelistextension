@@ -29,6 +29,10 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
             new CommandItem(new SignInCommand()){
                 Title = "My Anime List Extension",
                 Subtitle = "Sign in to My Anime List",
+            },
+            new CommandItem(new SignOutCommand()){
+                Title = "My Anime List Extension",
+                Subtitle = "Sign out of My Anime List",
             }
         ];
     }
