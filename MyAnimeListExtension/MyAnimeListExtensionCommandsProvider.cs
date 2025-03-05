@@ -2,8 +2,10 @@
 // The Microsoft Corporation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System.Collections.Generic;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MyAnimeListExtension.Authentication;
 using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Pages;
 
@@ -11,35 +13,76 @@ namespace MyAnimeListExtension;
 
 public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
 {
-    private readonly ICommandItem[] _commands;
+    private readonly TokenService _tokenService;
+    private readonly InvokableCommand _signInCommand;
+    private readonly InvokableCommand _signOutCommand;
+    private readonly ListPage _topAnimePage;
+    private readonly ListPage _seasonalAnimePage;
+    private readonly ListPage _suggestedAnimePage;
 
-    public MyAnimeListExtensionCommandsProvider()
+    public MyAnimeListExtensionCommandsProvider(
+        TokenService tokenService,
+        ListPage topAnimePage,
+        ListPage seasonalAnimePage,
+        ListPage suggestedAnimePage,
+        InvokableCommand signInCommand,
+        InvokableCommand signOutCommand)
     {
+        _tokenService = tokenService;
+        _tokenService.LoginStateChanged += OnSignInStateChanged;
+        _topAnimePage = topAnimePage;
+        _seasonalAnimePage = seasonalAnimePage;
+        _suggestedAnimePage = suggestedAnimePage;
+        _signInCommand = signInCommand;
+        _signOutCommand = signOutCommand;
+
         DisplayName = "My Anime List";
         Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
-        _commands = [
-            new CommandItem(new TopAnimePage())
-            {
-                Title = "Top anime",
-            },
-            new CommandItem(new SuggestedAnimePage())
-            {
-                Title = "Suggested anime",
-            },
-            new CommandItem(new SignInCommand()){
-                Title = "My Anime List Extension",
-                Subtitle = "Sign in to My Anime List",
-            },
-            new CommandItem(new SignOutCommand()){
-                Title = "My Anime List Extension",
-                Subtitle = "Sign out of My Anime List",
-            }
-        ];
     }
 
     public override ICommandItem[] TopLevelCommands()
     {
-        return _commands;
+        var commands = new List<ICommandItem>
+        {
+            new CommandItem(_topAnimePage)
+            {
+                Title = "Top anime",
+                Subtitle = "Top 50 anime on My Anime List",
+            },
+            new CommandItem(_seasonalAnimePage)
+            {
+                Title = "Seasonal anime",
+                Subtitle = "Seasonal anime on My Anime List",
+            },
+        };
+
+        if (_tokenService.IsLoggedIn())
+        {
+            commands.Add(new CommandItem(_suggestedAnimePage)
+            {
+                Title = "Suggested anime",
+                Subtitle = "Anime suggestions based on your list",
+            });
+            commands.Add(new CommandItem(_signOutCommand)
+            {
+                Title = "My Anime List Extension",
+                Subtitle = "Sign out of My Anime List",
+            });
+        }
+        else
+        {
+            commands.Add(new CommandItem(_signInCommand)
+            {
+                Title = "My Anime List Extension",
+                Subtitle = "Sign in to My Anime List",
+            });
+        }
+
+        return commands.ToArray();
     }
 
+    private void OnSignInStateChanged(object? source, bool loginState)
+    {
+        RaiseItemsChanged(0);
+    }
 }

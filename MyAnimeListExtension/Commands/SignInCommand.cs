@@ -6,14 +6,17 @@ namespace MyAnimeListExtension.Commands;
 internal sealed partial class SignInCommand : InvokableCommand
 {
 
-    internal SignInCommand()
+    private readonly TokenService _tokenService;
+
+    internal SignInCommand(TokenService tokenService)
     {
         Name = "Sign in to My Anime List";
+        _tokenService = tokenService;
     }
 
     public override CommandResult Invoke()
     {
-        TokenService.LoginUser();
+        _tokenService.StartLoginUser();
         return CommandResult.KeepOpen();
     }
 }

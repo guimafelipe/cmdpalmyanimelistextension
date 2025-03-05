@@ -11,4 +11,6 @@ public class Anime
     public int Id { get; set; }
     public string Title { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
+    public string Synopsis { get; set; } = string.Empty;
+    public string EnglishTitle { get; set; } = string.Empty;
 }

@@ -6,6 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace MyAnimeListExtension;
 
@@ -16,11 +17,12 @@ public sealed partial class MyAnimeListExtension : IExtension, IDisposable
 {
     private readonly ManualResetEvent _extensionDisposedEvent;
 
-    private readonly MyAnimeListExtensionCommandsProvider _provider = new();
+    private readonly CommandProvider _provider;
 
-    public MyAnimeListExtension(ManualResetEvent extensionDisposedEvent)
+    public MyAnimeListExtension(ManualResetEvent extensionDisposedEvent, CommandProvider provider)
     {
-        this._extensionDisposedEvent = extensionDisposedEvent;
+        _extensionDisposedEvent = extensionDisposedEvent;
+        _provider = provider;
     }
 
     public object? GetProvider(ProviderType providerType)

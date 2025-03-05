@@ -1,47 +1,57 @@
-﻿using System.Net;
-using Microsoft.CommandPalette.Extensions;
-using Microsoft.CommandPalette.Extensions.Toolkit;
+﻿using System;
+using System.Net;
 
 namespace MyAnimeListExtension.Authentication;
 
 public sealed class TokenService
 {
-    private static readonly CredentialVault credentialVault = new();
+    private readonly ICredentialVault _credentialVault;
 
-    public static bool IsLoggedIn()
+    private readonly OAuthClient _oAuthClient;
+
+    public event EventHandler<bool>? LoginStateChanged;
+
+    public TokenService(ICredentialVault credentialVault, OAuthClient oAuthClient)
     {
-        var accessToken = credentialVault.GetCredentials("MyAnimeList")?.Password;
+        _credentialVault = credentialVault;
+        _oAuthClient = oAuthClient;
+    }
+
+    public bool IsLoggedIn()
+    {
+        var accessToken = _credentialVault.GetCredentials("MyAnimeList")?.Password;
         return !string.IsNullOrEmpty(accessToken);
     }
 
-    public static string GetAccessToken()
+    public string GetAccessToken()
     {
-        var accessToken = credentialVault.GetCredentials("MyAnimeList")?.Password;
+        var accessToken = _credentialVault.GetCredentials("MyAnimeList")?.Password;
         return accessToken!;
     }
 
-    public static void SaveOrOverwriteAccessToken(string accessToken)
+    public void SaveOrOverwriteAccessToken(string accessToken)
     {
-        credentialVault.SaveCredentials("MyAnimeList", new NetworkCredential(string.Empty, accessToken).SecurePassword);
+        _credentialVault.SaveCredentials("MyAnimeList", new NetworkCredential(string.Empty, accessToken).SecurePassword);
     }
 
-    public static void SaveOrOverwriteRefreshToken(string refreshToken)
+    public void SaveOrOverwriteRefreshToken(string refreshToken)
     {
-        credentialVault.SaveCredentials("MyAnimeListRefresh", new NetworkCredential(string.Empty, refreshToken).SecurePassword);
+        _credentialVault.SaveCredentials("MyAnimeListRefresh", new NetworkCredential(string.Empty, refreshToken).SecurePassword);
     }
 
-    public static void LoginUser()
+    public void StartLoginUser()
     {
-        OAuthClient.AccessTokenChanged += OAuthTokenEventHandler;
-        OAuthClient.BeginOAuthRequest();
+        _oAuthClient.AccessTokenChanged += OAuthTokenEventHandler;
+        _oAuthClient.BeginOAuthRequest();
     }
 
-    public static void LogoutUser()
+    public void LogoutUser()
     {
-        credentialVault.RemoveAllCredentials();
+        _credentialVault.RemoveAllCredentials();
+        LoginStateChanged?.Invoke(this, false);
     }
 
-    public static void OAuthTokenEventHandler(object? sender, OAuthEventArgs e)
+    public void OAuthTokenEventHandler(object? sender, OAuthEventArgs e)
     {
         if(e.Error != null)
         {
@@ -50,13 +60,6 @@ public sealed class TokenService
 
         SaveOrOverwriteAccessToken(e.AccessToken!);
         SaveOrOverwriteRefreshToken(e.RefreshToken!);
-
-        var toast = new ToastStatusMessage(new StatusMessage()
-        {
-            Message = "Successfully logged in to MyAnimeList",
-            State = MessageState.Success
-        });
-
-        toast.Show();
+        LoginStateChanged?.Invoke(this, true);
     }
 }

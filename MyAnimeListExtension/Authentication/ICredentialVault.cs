@@ -8,7 +8,7 @@ using Windows.Security.Credentials;
 
 namespace MyAnimeListExtension.Authentication;
 
-internal interface ICredentialVault
+public interface ICredentialVault
 {
     PasswordCredential? GetCredentials(string loginId);
 

@@ -7,20 +7,17 @@ using System.Threading.Tasks;
 
 namespace MyAnimeListExtension.Authentication;
 
-internal sealed class OAuthClient : IDisposable
+public sealed class OAuthClient
 {
-    private readonly HttpClient _httpClient;
+    public string AccessToken { get; private set; } = string.Empty;
 
-    public static string AccessToken { get; private set; } = string.Empty;
-
-    public static event EventHandler<OAuthEventArgs>? AccessTokenChanged;
+    public event EventHandler<OAuthEventArgs>? AccessTokenChanged;
 
     public OAuthClient()
     {
-        _httpClient = new HttpClient();
     }
 
-    private static Uri CreateOAuthRequestUri()
+    private Uri CreateOAuthRequestUri()
     {
         var client_id = Environment.GetEnvironmentVariable("MAL_CLIENT_ID");
         var code_challenge = Environment.GetEnvironmentVariable("MAL_CODE_CHALLENGE");
@@ -28,12 +25,12 @@ internal sealed class OAuthClient : IDisposable
         return new Uri($"https://myanimelist.net/v1/oauth2/authorize?response_type=code&client_id={client_id}&code_challenge={code_challenge}&state=state&redirect_uri={redirect_uri}");
     }
 
-    private static Uri CreateRequestTokenUri()
+    private Uri CreateRequestTokenUri()
     {
         return new Uri($"https://myanimelist.net/v1/oauth2/token");
     }
 
-    public static void BeginOAuthRequest()
+    public void BeginOAuthRequest()
     {
         var uri = CreateOAuthRequestUri();
         var options = new Windows.System.LauncherOptions();
@@ -55,7 +52,7 @@ internal sealed class OAuthClient : IDisposable
     }
 
 
-    public static async Task HandleOAuthRedirection(Uri response)
+    public async Task HandleOAuthRedirection(Uri response)
     {
         var queryString = response.Query;
         var queryStringCollection = System.Web.HttpUtility.ParseQueryString(queryString);
@@ -131,10 +128,5 @@ internal sealed class OAuthClient : IDisposable
             Debug.WriteLine($"Unexpected error: {ex.Message}");
         }
 
-    }
-
-    public void Dispose()
-    {
-        _httpClient.Dispose();
     }
 }

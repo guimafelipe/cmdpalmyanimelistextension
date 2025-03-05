@@ -20,7 +20,6 @@ internal sealed partial class MyAnimeListExtensionPage : ListPage
     public override IListItem[] GetItems()
     {
         return [
-            new ListItem(new TopAnimePage()) { Title = "TODO: Implement your extension here" }
         ];
     }
 }

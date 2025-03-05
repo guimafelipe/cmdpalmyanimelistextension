@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.Windows.AppLifecycle;
 using MyAnimeListExtension.Authentication;
+using MyAnimeListExtension.Commands;
+using MyAnimeListExtension.Pages;
 using Windows.ApplicationModel.Activation;
 
 namespace MyAnimeListExtension;
@@ -77,21 +79,29 @@ public class Program
         }
     }
 
+    private static OAuthClient? _oAuthClient;
+
     private static void HandleCOMServerActivation()
     {
+        var credentialVault = new CredentialVault();
+        var oAuthClient = new OAuthClient();
+        _oAuthClient = oAuthClient;
+        var tokenService = new TokenService(credentialVault, oAuthClient);
+        var dataProvider = new DataProvider(tokenService);
+
+        var signInCommand = new SignInCommand(tokenService);
+        var signOutCommand = new SignOutCommand(tokenService);
+
+        var topAnimePage = new TopAnimePage(dataProvider);
+        var seasonalAnimePage = new SeasonalAnimePage(dataProvider);
+        var suggestedAnimePage = new SuggestedAnimePage(dataProvider);
+
+        var commandProvider = new MyAnimeListExtensionCommandsProvider(
+            tokenService, topAnimePage, seasonalAnimePage, suggestedAnimePage, signInCommand, signOutCommand);
+
         using ExtensionServer server = new();
         var extensionDisposedEvent = new ManualResetEvent(false);
-        var extensionInstance = new MyAnimeListExtension(extensionDisposedEvent);
-
-
-        var dataProvider = new DataProvider();
-
-        var res = DataProvider.GetAnimeRankingAsync().GetAwaiter().GetResult();
-
-        Console.WriteLine("Eu existo?");
-        Console.WriteLine(res);
-        Debug.WriteLine("Eu existo?");
-        Debug.WriteLine(res);
+        var extensionInstance = new MyAnimeListExtension(extensionDisposedEvent, commandProvider);
 
         // We are instantiating an extension instance once above, and returning it every time the callback in RegisterExtension below is called.
         // This makes sure that only one instance of SampleExtension is alive, which is returned every time the host asks for the IExtension object.
@@ -103,5 +113,5 @@ public class Program
         extensionDisposedEvent.WaitOne();
     }
 
-    private static void HandleProtocolActivation(Uri oauthRedirectUri) => _ = OAuthClient.HandleOAuthRedirection(oauthRedirectUri);
+    private static void HandleProtocolActivation(Uri oauthRedirectUri) => _ = _oAuthClient?.HandleOAuthRedirection(oauthRedirectUri);
 }
