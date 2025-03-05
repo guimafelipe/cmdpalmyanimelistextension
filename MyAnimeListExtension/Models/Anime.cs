@@ -15,4 +15,11 @@ public class Anime
     public string Synopsis { get; set; } = string.Empty;
     public string EnglishTitle { get; set; } = string.Empty;
     public List<string> Genres { get; set; } = new List<string>();
+    public List<string> Studios { get; set; } = new List<string>();
+    public string MediaType { get; set; } = string.Empty;
+    public string StartSeason { get; set; } = string.Empty;
+    public int StartYear { get; set; }
+    public int Rank { get; set; }
+    public double Mean { get; set; }
+    public int NumListUsers { get; set; }
 }

@@ -10,7 +10,7 @@ public sealed partial class AnimeListItem : ListItem
 {
     private const int _maxNumberOfTags = 4;
 
-    public AnimeListItem(Anime anime) : base(new LinkCommand(anime))
+    public AnimeListItem(Anime anime) : base(new LinkCommand(anime) { Name = "Open Anime in browser" })
     {
         Title = anime.Title;
         Subtitle = anime.EnglishTitle;

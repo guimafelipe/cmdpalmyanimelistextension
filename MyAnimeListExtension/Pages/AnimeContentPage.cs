@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Commands;
@@ -22,38 +18,71 @@ public class AnimeContentPage : ContentPage
         Name = "View Anime information";
         Commands = new CommandContextItem[]
         {
-            new(new LinkCommand(anime)),
+            new(new LinkCommand(anime))
+            {
+                Title = "Open in browser",
+                Subtitle = "Open the anime in the browser",
+            },
         };
+        Debug.WriteLine($"Anime: {anime.Title}");
+        foreach (var genre in anime.Genres)
+        {
+            Debug.WriteLine(genre);
+        }
+
+        foreach (var studio in anime.Studios)
+        {
+            Debug.WriteLine(studio);
+        }
+
         Details = new Details()
         {
             HeroImage = new IconInfo(anime.ImageUrl),
             Metadata = [
                 new DetailsElement()
                 {
-                    Key = "Title",
+                    Key = $"☆ {(anime.Mean <= 0 ? "--" : anime.Mean)}",
                     Data = new DetailsLink()
                     {
-                        Text = anime.EnglishTitle,
+                        Text = $"Ranked #{(anime.Rank == 0 ? "--" : anime.Rank)}",
                     },
                 },
                 new DetailsElement()
                 {
-                    Key = "Episodes",
+                    Key = $"{anime.MediaType}",
                     Data = new DetailsLink()
                     {
-                        Text = $"{anime.Episodes}",
+                        Text = $"Episodes: {anime.Episodes}",
                     },
                 },
                 new DetailsElement()
                 {
-                    Data = new DetailsSeparator()
+                    Key = $"Season",
+                    Data = new DetailsLink()
+                    {
+                        Text = $"{anime.StartSeason} {anime.StartYear}",
+                    },
+                },
+                new DetailsElement()
+                {
+                    Key = $"Studios",
+                    Data = new DetailsTags()
+                    {
+                        Tags = anime.Studios.Select(studio => {
+                            Debug.WriteLine(studio);
+                            return new Tag(studio);
+                        }).ToArray()
+                    },
                 },
                 new DetailsElement()
                 {
                     Key = "Genres",
                     Data = new DetailsTags()
                     {
-                        Tags = anime.Genres.Select(genre => new Tag(genre)).ToArray()
+                        Tags = anime.Genres.Select(genre => {
+                            Debug.WriteLine(genre);
+                            return new Tag(genre);
+                        }).ToArray()
                     },
                 },
                 ]

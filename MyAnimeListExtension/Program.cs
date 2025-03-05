@@ -46,8 +46,8 @@ public class Program
             {
                 Debug.WriteLine($"Error: {ex.Message}");
             }
-
         }
+
         else
         {
             Console.WriteLine("Not being launched as a Extension... exiting.");

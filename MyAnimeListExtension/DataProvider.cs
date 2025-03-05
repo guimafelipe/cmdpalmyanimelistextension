@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using MyAnimeListExtension.Authentication;
 using MyAnimeListExtension.Models;
+using Windows.Globalization;
 
 namespace MyAnimeListExtension;
 
@@ -34,6 +35,7 @@ internal sealed class DataProvider
         {
             throw new InvalidOperationException("API key is not set in the environment variables.");
         }
+
         client.DefaultRequestHeaders.Add("X-MAL-CLIENT-ID", apiKey);
 
         return client;
@@ -50,7 +52,6 @@ internal sealed class DataProvider
 
         var addedQuestionMark = false;
 
-
         foreach (var (key, value) in query)
         {
             sb.Append(addedQuestionMark ? '&' : '?');
@@ -64,9 +65,10 @@ internal sealed class DataProvider
         return sb.ToString();
     }
 
-    private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles,genres,num_episodes";
+    private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles," +
+        "genres,num_episodes,mean,media_type,studios,num_list_users,start_season,rank";
 
-    private static List<Anime> GetFromJsonData(string? json)
+    private List<Anime> GetFromJsonData(string? json)
     {
         var res = new List<Anime>();
 
@@ -81,6 +83,8 @@ internal sealed class DataProvider
         var data = root.GetProperty("data").EnumerateArray();
         foreach (var item in data)
         {
+            var prettyJson = JsonSerializer.Serialize(item, _jsonSerializerOptions);
+            Debug.WriteLine(prettyJson);
             var anime = new Anime
             {
                 Id = item.GetProperty("node").GetProperty("id").GetInt32(),
@@ -90,7 +94,24 @@ internal sealed class DataProvider
                 Synopsis = item.GetProperty("node").GetProperty("synopsis").GetString() ?? string.Empty,
                 Genres = item.GetProperty("node").GetProperty("genres").EnumerateArray().Select(genre => genre.GetProperty("name").GetString() ?? string.Empty).ToList(),
                 Episodes = item.GetProperty("node").GetProperty("num_episodes").GetInt32(),
+                MediaType = item.GetProperty("node").GetProperty("media_type").GetString() ?? string.Empty,
+                NumListUsers = item.GetProperty("node").GetProperty("num_list_users").GetInt32(),
+                Studios = item.GetProperty("node").GetProperty("studios").EnumerateArray().Select(studio => studio.GetProperty("name").GetString() ?? string.Empty).ToList(),
+                StartSeason = item.GetProperty("node").GetProperty("start_season").GetProperty("season").GetString() ?? string.Empty,
+                StartYear = item.GetProperty("node").GetProperty("start_season").GetProperty("year").GetInt32(),
             };
+
+            if (item.GetProperty("node").TryGetProperty("rank", out var rank))
+            {
+                anime.Rank = rank.GetInt32();
+            }
+
+            if (item.GetProperty("node").TryGetProperty("mean", out var mean))
+            {
+                anime.Mean = mean.GetDouble();
+
+            }
+
             res.Add(anime);
         }
 
