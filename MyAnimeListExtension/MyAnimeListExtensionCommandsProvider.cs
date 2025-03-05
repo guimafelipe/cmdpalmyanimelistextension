@@ -51,8 +51,8 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
             },
             new CommandItem(_seasonalAnimePage)
             {
-                Title = "Seasonal anime",
-                Subtitle = "Seasonal anime on My Anime List",
+                Title = "Animes of the Season",
+                Subtitle = "Seasonal anime on My Anime List for the current season",
             },
         };
 
@@ -61,7 +61,7 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
             commands.Add(new CommandItem(_suggestedAnimePage)
             {
                 Title = "Suggested anime",
-                Subtitle = "Anime suggestions based on your list",
+                Subtitle = "Anime suggestions based on your personal list",
             });
             commands.Add(new CommandItem(_signOutCommand)
             {
