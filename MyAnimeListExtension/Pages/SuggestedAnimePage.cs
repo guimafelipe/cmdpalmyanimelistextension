@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MyAnimeListExtension.Data;
 using MyAnimeListExtension.ListItems;
 
 namespace MyAnimeListExtension.Pages;
