@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using MyAnimeListExtension.Authentication;
 using MyAnimeListExtension.Models;
+using MyAnimeListExtension.Pages;
 using Windows.Globalization;
 
 namespace MyAnimeListExtension;
@@ -204,6 +205,50 @@ internal sealed class DataProvider
         var uriString = GetUriWithQuery($"anime/season/{year}/{season}", query);
 
         HttpResponseMessage response = await client.GetAsync(uriString);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
+        }
+
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+        var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
+        Debug.WriteLine(prettyJson);
+
+        return GetFromJsonData(jsonResponse);
+    }
+
+    private static string GetStringForUserAnimePageType(UserAnimePageType type)
+    {
+        return type switch
+        {
+            UserAnimePageType.Dropped => "dropped",
+            UserAnimePageType.OnHold => "on_hold",
+            UserAnimePageType.PlanToWatch => "plan_to_watch",
+            UserAnimePageType.Watching => "watching",
+            UserAnimePageType.Completed => "completed",
+            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
+        };
+    }
+
+    public async Task<List<Anime>> GetUserAnimeListAsync(UserAnimePageType type)
+    {
+        using var client = GetClient();
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
+        var query = new Dictionary<string, string>
+        {
+            { "fields", QueryFields },
+            { "status", GetStringForUserAnimePageType(type) },
+            { "sort", "list_score" },
+            { "limit", "100" }
+        };
+
+        var uriString = GetUriWithQuery($"users/@me/animelist", query);
+        Debug.WriteLine($"Requesting: {uriString}");
+        HttpResponseMessage response = await client.GetAsync(uriString);
+
         if (!response.IsSuccessStatusCode)
         {
             throw new HttpRequestException($"Request failed with status code {response.StatusCode}");

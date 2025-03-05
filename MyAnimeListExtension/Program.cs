@@ -96,8 +96,15 @@ public class Program
         var seasonalAnimePage = new SeasonalAnimePage(dataProvider);
         var suggestedAnimePage = new SuggestedAnimePage(dataProvider);
 
+        var watchingPage = new UserAnimeListPage(UserAnimePageType.Watching, dataProvider);
+        var completedPage = new UserAnimeListPage(UserAnimePageType.Completed, dataProvider);
+        var onHoldPage = new UserAnimeListPage(UserAnimePageType.OnHold, dataProvider);
+        var droppedPage = new UserAnimeListPage(UserAnimePageType.Dropped, dataProvider);
+        var planToWatchPage = new UserAnimeListPage(UserAnimePageType.PlanToWatch, dataProvider);
+        var userListsPage = new UserListsPage(watchingPage, completedPage, onHoldPage, droppedPage, planToWatchPage);
+
         var commandProvider = new MyAnimeListExtensionCommandsProvider(
-            tokenService, topAnimePage, seasonalAnimePage, suggestedAnimePage, signInCommand, signOutCommand);
+            tokenService, topAnimePage, seasonalAnimePage, suggestedAnimePage,userListsPage, signInCommand, signOutCommand);
 
         using ExtensionServer server = new();
         var extensionDisposedEvent = new ManualResetEvent(false);

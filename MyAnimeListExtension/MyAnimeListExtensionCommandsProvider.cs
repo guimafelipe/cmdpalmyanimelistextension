@@ -19,12 +19,14 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
     private readonly ListPage _topAnimePage;
     private readonly ListPage _seasonalAnimePage;
     private readonly ListPage _suggestedAnimePage;
+    private readonly ListPage _userListsPage;
 
     public MyAnimeListExtensionCommandsProvider(
         TokenService tokenService,
         ListPage topAnimePage,
         ListPage seasonalAnimePage,
         ListPage suggestedAnimePage,
+        ListPage userListsPage,
         InvokableCommand signInCommand,
         InvokableCommand signOutCommand)
     {
@@ -33,6 +35,7 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
         _topAnimePage = topAnimePage;
         _seasonalAnimePage = seasonalAnimePage;
         _suggestedAnimePage = suggestedAnimePage;
+        _userListsPage = userListsPage;
         _signInCommand = signInCommand;
         _signOutCommand = signOutCommand;
 
@@ -62,6 +65,11 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
             {
                 Title = "Suggested anime",
                 Subtitle = "Anime suggestions based on your personal list",
+            });
+            commands.Add(new CommandItem(_userListsPage)
+            {
+                Title = "My Anime Lists",
+                Subtitle = "Your personal anime lists",
             });
             commands.Add(new CommandItem(_signOutCommand)
             {

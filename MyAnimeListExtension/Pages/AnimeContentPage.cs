@@ -24,6 +24,7 @@ public class AnimeContentPage : ContentPage
                 Subtitle = "Open the anime in the browser",
             },
         };
+        
         Debug.WriteLine($"Anime: {anime.Title}");
         foreach (var genre in anime.Genres)
         {
