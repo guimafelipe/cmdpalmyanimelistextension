@@ -2,6 +2,7 @@
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Models;
+using MyAnimeListExtension.Pages;
 
 namespace MyAnimeListExtension.ListItems;
 
@@ -17,5 +18,9 @@ public sealed partial class AnimeListItem : ListItem
         {
             Text = genre,
         }).Take(_maxNumberOfTags).ToArray();
+        MoreCommands = new CommandContextItem[]
+        {
+            new(new AnimeContentPage(anime)),
+        };
     }
 }

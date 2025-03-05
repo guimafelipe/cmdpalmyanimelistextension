@@ -64,7 +64,7 @@ internal sealed class DataProvider
         return sb.ToString();
     }
 
-    private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles,genres";
+    private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles,genres,num_episodes";
 
     private static List<Anime> GetFromJsonData(string? json)
     {
@@ -89,6 +89,7 @@ internal sealed class DataProvider
                 EnglishTitle = item.GetProperty("node").GetProperty("alternative_titles").GetProperty("en").GetString() ?? string.Empty,
                 Synopsis = item.GetProperty("node").GetProperty("synopsis").GetString() ?? string.Empty,
                 Genres = item.GetProperty("node").GetProperty("genres").EnumerateArray().Select(genre => genre.GetProperty("name").GetString() ?? string.Empty).ToList(),
+                Episodes = item.GetProperty("node").GetProperty("num_episodes").GetInt32(),
             };
             res.Add(anime);
         }
@@ -107,6 +108,8 @@ internal sealed class DataProvider
         };
 
         var uriString = GetUriWithQuery("anime/suggestions", query);
+
+        Debug.WriteLine($"Requesting: {uriString}");
 
         HttpResponseMessage response = await client.GetAsync(uriString);
         if (!response.IsSuccessStatusCode)
