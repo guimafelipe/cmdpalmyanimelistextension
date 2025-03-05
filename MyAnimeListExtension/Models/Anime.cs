@@ -13,4 +13,5 @@ public class Anime
     public string ImageUrl { get; set; } = string.Empty;
     public string Synopsis { get; set; } = string.Empty;
     public string EnglishTitle { get; set; } = string.Empty;
+    public List<string> Genres { get; set; } = new List<string>();
 }

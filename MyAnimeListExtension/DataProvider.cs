@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -38,43 +39,6 @@ internal sealed class DataProvider
         return client;
     }
 
-    public async Task<List<Anime>> GetSuggestedAnimeAsync()
-    {
-        using var client = GetClient();
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
-        HttpResponseMessage response = await client.GetAsync("anime/suggestions");
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
-        }
-
-        var jsonResponse = await response.Content.ReadAsStringAsync();
-
-        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
-        var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
-        Debug.WriteLine(prettyJson);
-
-        var jsonDocument = JsonDocument.Parse(jsonResponse);
-
-        var root = jsonDocument.RootElement;
-        var data = root.GetProperty("data").EnumerateArray();
-        var res = new List<Anime>();
-        foreach (var item in data)
-        {
-            var anime = new Anime
-            {
-                Id = item.GetProperty("node").GetProperty("id").GetInt32(),
-                Title = item.GetProperty("node").GetProperty("title").GetString() ?? string.Empty,
-                ImageUrl = item.GetProperty("node").GetProperty("main_picture").GetProperty("medium").GetString() ?? string.Empty,
-            };
-            Debug.WriteLine(anime.Title);
-            Debug.WriteLine(anime.ImageUrl);
-            res.Add(anime);
-        }
-
-        return res;
-    }
-
     private static string GetUriWithQuery(string uri, Dictionary<string, string> query)
     {
         var sb = new StringBuilder(uri);
@@ -100,11 +64,51 @@ internal sealed class DataProvider
         return sb.ToString();
     }
 
-    public async Task<List<Anime>> GetAnimeRankingAsync()
+    private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles,genres";
+
+    private static List<Anime> GetFromJsonData(string? json)
+    {
+        var res = new List<Anime>();
+
+        if (json == null)
+        {
+            return res;
+        }
+
+        var jsonDocument = JsonDocument.Parse(json);
+
+        var root = jsonDocument.RootElement;
+        var data = root.GetProperty("data").EnumerateArray();
+        foreach (var item in data)
+        {
+            var anime = new Anime
+            {
+                Id = item.GetProperty("node").GetProperty("id").GetInt32(),
+                Title = item.GetProperty("node").GetProperty("title").GetString() ?? string.Empty,
+                ImageUrl = item.GetProperty("node").GetProperty("main_picture").GetProperty("large").GetString() ?? string.Empty,
+                EnglishTitle = item.GetProperty("node").GetProperty("alternative_titles").GetProperty("en").GetString() ?? string.Empty,
+                Synopsis = item.GetProperty("node").GetProperty("synopsis").GetString() ?? string.Empty,
+                Genres = item.GetProperty("node").GetProperty("genres").EnumerateArray().Select(genre => genre.GetProperty("name").GetString() ?? string.Empty).ToList(),
+            };
+            res.Add(anime);
+        }
+
+        return res;
+    }
+
+    public async Task<List<Anime>> GetSuggestedAnimeAsync()
     {
         using var client = GetClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
 
-        HttpResponseMessage response = await client.GetAsync("anime/ranking");
+        var query = new Dictionary<string, string>
+        {
+            { "fields", QueryFields },
+        };
+
+        var uriString = GetUriWithQuery("anime/suggestions", query);
+
+        HttpResponseMessage response = await client.GetAsync(uriString);
         if (!response.IsSuccessStatusCode)
         {
             throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
@@ -116,25 +120,34 @@ internal sealed class DataProvider
         var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
         Debug.WriteLine(prettyJson);
 
-        var jsonDocument = JsonDocument.Parse(jsonResponse);
+        return GetFromJsonData(jsonResponse);
+    }
 
-        var root = jsonDocument.RootElement;
-        var data = root.GetProperty("data").EnumerateArray();
-        var res = new List<Anime>();
-        foreach (var item in data)
+    public async Task<List<Anime>> GetAnimeRankingAsync()
+    {
+        using var client = GetClient();
+
+        var query = new Dictionary<string, string>
         {
-            var anime = new Anime
-            {
-                Id = item.GetProperty("node").GetProperty("id").GetInt32(),
-                Title = item.GetProperty("node").GetProperty("title").GetString() ?? string.Empty,
-                ImageUrl = item.GetProperty("node").GetProperty("main_picture").GetProperty("large").GetString() ?? string.Empty,
-            };
-            Debug.WriteLine(anime.Title);
-            Debug.WriteLine(anime.ImageUrl);
-            res.Add(anime);
+            { "limit", "100" },
+            { "fields", QueryFields }
+        };
+
+        var uriString = GetUriWithQuery("anime/ranking", query);
+
+        HttpResponseMessage response = await client.GetAsync(uriString);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
         }
 
-        return res;
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+
+        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
+        var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
+        Debug.WriteLine(prettyJson);
+
+        return GetFromJsonData(jsonResponse);
     }
 
     public async Task<List<Anime>> GetSeasonAnimeAsync()
@@ -145,7 +158,7 @@ internal sealed class DataProvider
         {
             { "sort", "anime_num_list_users" },
             { "limit", "100" },
-            { "fields", "id,title,main_picture,synopsis" },
+            { "fields", QueryFields }
         };
 
         var uriString = GetUriWithQuery("anime/season/2025/winter", query);
@@ -162,24 +175,6 @@ internal sealed class DataProvider
         var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
         Debug.WriteLine(prettyJson);
 
-        var jsonDocument = JsonDocument.Parse(jsonResponse);
-
-        var root = jsonDocument.RootElement;
-        var data = root.GetProperty("data").EnumerateArray();
-        var res = new List<Anime>();
-        foreach (var item in data)
-        {
-            var anime = new Anime
-            {
-                Id = item.GetProperty("node").GetProperty("id").GetInt32(),
-                Title = item.GetProperty("node").GetProperty("title").GetString() ?? string.Empty,
-                ImageUrl = item.GetProperty("node").GetProperty("main_picture").GetProperty("large").GetString() ?? string.Empty,
-            };
-            Debug.WriteLine(anime.Title);
-            Debug.WriteLine(anime.ImageUrl);
-            res.Add(anime);
-        }
-
-        return res;
+        return GetFromJsonData(jsonResponse);
     }
 }

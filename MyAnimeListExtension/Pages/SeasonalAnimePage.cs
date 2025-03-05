@@ -21,6 +21,7 @@ internal sealed partial class SeasonalAnimePage : ListPage
         return res.Select(item => new ListItem(new LinkCommand(item) { })
         {
             Title = item.Title,
+            Subtitle = item.EnglishTitle,
         }).ToArray();
     }
 }

@@ -65,16 +65,16 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
             });
             commands.Add(new CommandItem(_signOutCommand)
             {
-                Title = "My Anime List Extension",
-                Subtitle = "Sign out of My Anime List",
+                Title = "Sign out of My Anime List",
+                Subtitle = "Sign out of My Anime List Extension",
             });
         }
         else
         {
             commands.Add(new CommandItem(_signInCommand)
             {
-                Title = "My Anime List Extension",
-                Subtitle = "Sign in to My Anime List",
+                Title = "Sign in to My Anime List",
+                Subtitle = "Sign in to My Anime List Extension",
             });
         }
 
