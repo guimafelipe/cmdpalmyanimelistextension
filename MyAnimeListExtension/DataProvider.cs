@@ -174,6 +174,19 @@ internal sealed class DataProvider
         return GetFromJsonData(jsonResponse);
     }
 
+    // 1 = January, 2 = February, ...
+    private static string GetSeasonForMonth(int month)
+    {
+        return month switch
+        {
+            1 or 2 or 3 => "winter",
+            4 or 5 or 6 => "spring",
+            7 or 8 or 9 => "summer",
+            10 or 11 or 12 => "fall",
+            _ => "winter",
+        };
+    }
+
     public async Task<List<Anime>> GetSeasonAnimeAsync()
     {
         using var client = GetClient();
@@ -185,7 +198,10 @@ internal sealed class DataProvider
             { "fields", QueryFields }
         };
 
-        var uriString = GetUriWithQuery("anime/season/2025/winter", query);
+        var season = GetSeasonForMonth(DateTime.Now.Month);
+        var year = DateTime.Now.Year;
+
+        var uriString = GetUriWithQuery($"anime/season/{year}/{season}", query);
 
         HttpResponseMessage response = await client.GetAsync(uriString);
         if (!response.IsSuccessStatusCode)

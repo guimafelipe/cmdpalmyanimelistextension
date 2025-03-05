@@ -68,10 +68,7 @@ public class AnimeContentPage : ContentPage
                     Key = $"Studios",
                     Data = new DetailsTags()
                     {
-                        Tags = anime.Studios.Select(studio => {
-                            Debug.WriteLine(studio);
-                            return new Tag(studio);
-                        }).ToArray()
+                        Tags = anime.Studios.Select(studio => new Tag(studio)).ToArray()
                     },
                 },
                 new DetailsElement()
@@ -79,10 +76,7 @@ public class AnimeContentPage : ContentPage
                     Key = "Genres",
                     Data = new DetailsTags()
                     {
-                        Tags = anime.Genres.Select(genre => {
-                            Debug.WriteLine(genre);
-                            return new Tag(genre);
-                        }).ToArray()
+                        Tags = anime.Genres.Select(genre => new Tag(genre)).ToArray()
                     },
                 },
                 ]
