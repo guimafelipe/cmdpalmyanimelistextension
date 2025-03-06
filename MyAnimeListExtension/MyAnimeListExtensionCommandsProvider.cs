@@ -40,7 +40,7 @@ public partial class MyAnimeListExtensionCommandsProvider : CommandProvider
         _signOutCommand = signOutCommand;
 
         DisplayName = "My Anime List";
-        Icon = IconHelpers.FromRelativePath("Assets\\StoreLogo.png");
+        Icon = IconHelpers.FromRelativePath("Assets\\MALLogo.png");
     }
 
     public override ICommandItem[] TopLevelCommands()

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Models;
@@ -17,10 +18,11 @@ public sealed partial class AnimeListItem : ListItem
         AnimeDeleted?.Invoke(this, EventArgs.Empty);
     }
 
-    public AnimeListItem(Anime anime) : base(new LinkCommand(anime) { Name = "Open Anime in browser" })
+    public AnimeListItem(Anime anime, ICommand command) : base(command)
     {
         Title = anime.Title;
         Subtitle = anime.EnglishTitle;
+        Icon = new IconInfo(anime.ImageUrl);
         Tags = anime.Genres.Select(genre => new Tag
         {
             Text = genre,

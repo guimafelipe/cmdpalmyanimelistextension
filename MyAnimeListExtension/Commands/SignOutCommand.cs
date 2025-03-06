@@ -11,6 +11,7 @@ internal sealed partial class SignOutCommand : InvokableCommand
     {
         _tokenService = tokenService;
         Name = "Sign out from My Anime List";
+        Icon = new IconInfo("\uF3B1");
     }
 
     public override CommandResult Invoke()

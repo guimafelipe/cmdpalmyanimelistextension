@@ -18,7 +18,9 @@ public sealed class DeleteAnimeCommand : InvokableCommand
     {
         _anime = anime;
         _dataUpdater = dataUpdater;
+
         Name = "Delete from your list";
+        Icon = new IconInfo("\uE74D");
     }
 
     public event EventHandler? AnimeDeleted;

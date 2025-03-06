@@ -22,16 +22,14 @@ public sealed class AnimeListItemFactory
 
     public AnimeListItem Create(Anime anime)
     {
-        var animeListItem = new AnimeListItem(anime);
+        var linkCommand = new LinkCommand(anime);
+        var animeListItem = new AnimeListItem(anime, linkCommand);
+
         var contentPage = new AnimeContentPage(anime);
 
         var pageCommands = new List<CommandContextItem>()
         {
-            new(new LinkCommand(anime))
-            {
-                Title = "Open in browser",
-                Subtitle = "Open the anime in the browser",
-            },
+            new(linkCommand),
         };
 
         var moreCommands = new List<CommandContextItem>()

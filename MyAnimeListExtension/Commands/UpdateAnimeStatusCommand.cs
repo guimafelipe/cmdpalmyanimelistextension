@@ -12,12 +12,26 @@ public sealed partial class UpdateAnimeStatusCommand : InvokableCommand
     private readonly AnimeStatusType _status;
     private readonly DataUpdater _dataUpdater;
 
+    private static string GetIconForStatus(AnimeStatusType status) => status switch
+    {
+        AnimeStatusType.PlanToWatch => "\uE710",
+        _ => string.Empty,
+    };
+
+    private static string GetNameForStatus(AnimeStatusType status) => status switch
+    {
+        AnimeStatusType.PlanToWatch => "Plan to watch",
+        _ => string.Empty,
+    };
+
     internal UpdateAnimeStatusCommand(Anime anime, AnimeStatusType status, DataUpdater dataUpdater)
     {
         _anime = anime;
         _dataUpdater = dataUpdater;
         _status = status;
-        Name = $"{status}";
+
+        Name = GetNameForStatus(status);
+        Icon = new IconInfo(GetIconForStatus(status));
     }
 
     public override ICommandResult Invoke() => DoInvoke().GetAwaiter().GetResult();

@@ -11,8 +11,8 @@ internal sealed partial class LinkCommand : InvokableCommand
     internal LinkCommand(Anime anime)
     {
         _htmlUrl = $"https://myanimelist.net/anime/{anime.Id}";
-        Name = "Open link";
-        Icon = new IconInfo(anime.ImageUrl);
+        Name = "Open in browser";
+        Icon = new IconInfo("\uE8A7");
     }
 
     public override CommandResult Invoke()
