@@ -126,6 +126,5 @@ public sealed class OAuthClient
         {
             Debug.WriteLine($"Unexpected error: {ex.Message}");
         }
-
     }
 }

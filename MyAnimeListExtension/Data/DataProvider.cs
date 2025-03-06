@@ -67,6 +67,7 @@ internal sealed class DataProvider
     private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles," +
         "genres,num_episodes,mean,media_type,studios,num_list_users,start_season,rank";
 
+#pragma warning disable CA1822 // Mark members as static
     private List<Anime> GetFromJsonData(string? json)
     {
         var res = new List<Anime>();
@@ -82,8 +83,6 @@ internal sealed class DataProvider
         var data = root.GetProperty("data").EnumerateArray();
         foreach (var item in data)
         {
-            var prettyJson = JsonSerializer.Serialize(item, _jsonSerializerOptions);
-            Debug.WriteLine(prettyJson);
             var anime = new Anime
             {
                 Id = item.GetProperty("node").GetProperty("id").GetInt32(),
@@ -129,8 +128,6 @@ internal sealed class DataProvider
 
         var uriString = GetUriWithQuery("anime/suggestions", query);
 
-        Debug.WriteLine($"Requesting: {uriString}");
-
         var response = await client.GetAsync(uriString);
         if (!response.IsSuccessStatusCode)
         {
@@ -165,10 +162,6 @@ internal sealed class DataProvider
         }
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
-
-        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
-        var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
-        Debug.WriteLine(prettyJson);
 
         return GetFromJsonData(jsonResponse);
     }
@@ -210,10 +203,6 @@ internal sealed class DataProvider
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
-        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
-        var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
-        Debug.WriteLine(prettyJson);
-
         return GetFromJsonData(jsonResponse);
     }
 
@@ -240,10 +229,6 @@ internal sealed class DataProvider
         }
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
-
-        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
-        var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
-        Debug.WriteLine(prettyJson);
 
         return GetFromJsonData(jsonResponse);
     }

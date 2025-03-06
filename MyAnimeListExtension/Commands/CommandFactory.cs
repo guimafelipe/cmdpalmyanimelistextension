@@ -16,4 +16,9 @@ public sealed class CommandFactory
     {
         return new UpdateAnimeStatusCommand(anime, status, _dataUpdater);
     }
+
+    public DeleteAnimeCommand CreateDeleteAnimeCommand(Anime anime)
+    {
+        return new DeleteAnimeCommand(anime, _dataUpdater);
+    }
 }

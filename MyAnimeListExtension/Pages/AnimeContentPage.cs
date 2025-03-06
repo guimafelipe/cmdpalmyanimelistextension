@@ -25,17 +25,6 @@ public class AnimeContentPage : ContentPage
             },
         };
         
-        Debug.WriteLine($"Anime: {anime.Title}");
-        foreach (var genre in anime.Genres)
-        {
-            Debug.WriteLine(genre);
-        }
-
-        foreach (var studio in anime.Studios)
-        {
-            Debug.WriteLine(studio);
-        }
-
         Details = new Details()
         {
             HeroImage = new IconInfo(anime.ImageUrl),

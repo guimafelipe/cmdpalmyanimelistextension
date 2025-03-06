@@ -36,12 +36,45 @@ public sealed class DataUpdater
             }),
         };
 
-        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
 
         var response = await client.SendAsync(request);
 
         response.EnsureSuccessStatusCode();
 
         Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
+    }
+
+    public event EventHandler? AnimeDeleted;
+
+    public async Task<bool> DeleteAnimeFromMyListAsync(Anime anime)
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
+
+        var uri = new Uri($"https://api.myanimelist.net/v2/anime/{anime.Id}/my_list_status");
+
+        Debug.WriteLine($"Deleting {anime.Title} from list");
+        var request = new HttpRequestMessage(HttpMethod.Delete, uri);
+
+        var response = await client.SendAsync(request);
+
+        try
+        {
+            response.EnsureSuccessStatusCode();
+            Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
+            AnimeDeleted?.Invoke(this, EventArgs.Empty);
+            return true;
+        }
+        catch
+        {
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                Debug.WriteLine("Anime not found in list");
+                return false;
+            }
+
+            throw;
+        }
     }
 }

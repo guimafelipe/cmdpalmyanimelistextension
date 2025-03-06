@@ -1,15 +1,12 @@
-﻿using Microsoft.CommandPalette.Extensions;
+﻿using System.Collections.Generic;
+using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 
 namespace MyAnimeListExtension.Pages;
 
 internal sealed partial class UserListsPage : ListPage
 {
-    private readonly IListPage _watchingPage;
-    private readonly IListPage _completedPage;
-    private readonly IListPage _onHoldPage;
-    private readonly IListPage _droppedPage;
-    private readonly IListPage _planToWatchPage;
+    private readonly List<IListPage> _userPages;
 
     public UserListsPage(
         IListPage watchingPage,
@@ -23,37 +20,29 @@ internal sealed partial class UserListsPage : ListPage
         Title = "My Anime lists";
         Name = "My Anime lists";
 
-        _watchingPage = watchingPage;
-        _completedPage = completedPage;
-        _onHoldPage = onHoldPage;
-        _droppedPage = droppedPage;
-        _planToWatchPage = planToWatchPage;
+        _userPages =
+        [
+            watchingPage,
+            completedPage,
+            onHoldPage,
+            droppedPage,
+            planToWatchPage
+        ];
     }
 
     public override IListItem[] GetItems()
     {
-        return new IListItem[]
+        var res = new List<IListItem>();
+
+        foreach (var page in _userPages)
         {
-            new ListItem(_watchingPage)
+            res.Add(new ListItem(page)
             {
-               Title = _watchingPage.Title,
-            },
-            new ListItem(_completedPage)
-            {
-                Title = _completedPage.Title,
-            },
-            new ListItem(_onHoldPage)
-            {
-                Title = _onHoldPage.Title,
-            },
-            new ListItem(_droppedPage) 
-            { 
-                Title = _droppedPage.Title 
-            },
-            new ListItem(_planToWatchPage)
-            {
-                Title = _planToWatchPage.Title 
-            }
-        };
+                Title = page.Title,
+                Subtitle = $"My Anime List: {page.Title} page"
+            });
+        }
+
+        return res.ToArray();
     }
 }

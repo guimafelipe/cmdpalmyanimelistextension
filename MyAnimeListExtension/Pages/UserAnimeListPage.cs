@@ -33,12 +33,22 @@ internal sealed partial class UserAnimeListPage : ListPage
         _animeListItemFactory = animeListItemFactory;
         _type = type;
         Icon = IconHelpers.FromRelativePath("Assets\\MALLogo.jpg");
-        Title = $"{GetTitleForType(type)}";
+        Title = GetTitleForType(type);
     }
 
     public override IListItem[] GetItems()
     {
         var res = _dataProvider.GetUserAnimeListAsync(_type).GetAwaiter().GetResult();
-        return res.Select(item => _animeListItemFactory.Create(item)).ToArray();
+        return res.Select(item =>
+        {
+            var listItem = _animeListItemFactory.Create(item);
+            listItem.AnimeDeleted += OnAnimeDeleted;
+            return listItem;
+        }).ToArray();
+    }
+
+    private void OnAnimeDeleted(object? sender, EventArgs e)
+    {
+        RaiseItemsChanged(0);
     }
 }
