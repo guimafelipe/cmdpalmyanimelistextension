@@ -9,7 +9,6 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using MyAnimeListExtension.Authentication;
 using MyAnimeListExtension.Models;
-using MyAnimeListExtension.Pages;
 
 namespace MyAnimeListExtension.Data;
 
@@ -218,20 +217,7 @@ internal sealed class DataProvider
         return GetFromJsonData(jsonResponse);
     }
 
-    private static string GetStringForUserAnimePageType(UserAnimePageType type)
-    {
-        return type switch
-        {
-            UserAnimePageType.Dropped => "dropped",
-            UserAnimePageType.OnHold => "on_hold",
-            UserAnimePageType.PlanToWatch => "plan_to_watch",
-            UserAnimePageType.Watching => "watching",
-            UserAnimePageType.Completed => "completed",
-            _ => throw new ArgumentOutOfRangeException(nameof(type), type, null),
-        };
-    }
-
-    public async Task<List<Anime>> GetUserAnimeListAsync(UserAnimePageType type)
+    public async Task<List<Anime>> GetUserAnimeListAsync(AnimeStatusType type)
     {
         using var client = GetClient();
 
@@ -239,7 +225,7 @@ internal sealed class DataProvider
         var query = new Dictionary<string, string>
         {
             { "fields", QueryFields },
-            { "status", GetStringForUserAnimePageType(type) },
+            { "status", DataHelper.GetStringForUserAnimePageType(type) },
             { "sort", "list_score" },
             { "limit", "100" }
         };

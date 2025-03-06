@@ -1,12 +1,47 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Diagnostics;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using MyAnimeListExtension.Authentication;
+using MyAnimeListExtension.Models;
 
-namespace MyAnimeListExtension.Data
+namespace MyAnimeListExtension.Data;
+
+public sealed class DataUpdater
 {
-    class DataUpdater
+    private readonly TokenService _tokenService;
+
+    public DataUpdater(TokenService tokenService)
     {
+        _tokenService = tokenService;
+    }
+
+    public async Task UpdateAnimeStatusAsync(Anime anime, AnimeStatusType type)
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
+
+        var uri = new Uri($"https://api.myanimelist.net/v2/anime/{anime.Id}/my_list_status");
+
+        Debug.WriteLine($"Updating status for {anime.Title} to {type}");
+
+        var request = new HttpRequestMessage(HttpMethod.Patch, uri)
+        {
+            Content =
+            new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("status", DataHelper.GetStringForUserAnimePageType(type)),
+            }),
+        };
+
+        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
+        var response = await client.SendAsync(request);
+
+        response.EnsureSuccessStatusCode();
+
+        Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
     }
 }

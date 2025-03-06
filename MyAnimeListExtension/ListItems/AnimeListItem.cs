@@ -18,9 +18,5 @@ public sealed partial class AnimeListItem : ListItem
         {
             Text = genre,
         }).Take(_maxNumberOfTags).ToArray();
-        MoreCommands = new CommandContextItem[]
-        {
-            new(new AnimeContentPage(anime)),
-        };
     }
 }

@@ -11,6 +11,9 @@ using Microsoft.CommandPalette.Extensions;
 using Microsoft.Windows.AppLifecycle;
 using MyAnimeListExtension.Authentication;
 using MyAnimeListExtension.Commands;
+using MyAnimeListExtension.Data;
+using MyAnimeListExtension.ListItems;
+using MyAnimeListExtension.Models;
 using MyAnimeListExtension.Pages;
 using Windows.ApplicationModel.Activation;
 
@@ -86,21 +89,27 @@ public class Program
         var credentialVault = new CredentialVault();
         var oAuthClient = new OAuthClient();
         _oAuthClient = oAuthClient;
+
         var tokenService = new TokenService(credentialVault, oAuthClient);
+
         var dataProvider = new DataProvider(tokenService);
+        var dataUpdater = new DataUpdater(tokenService);
 
         var signInCommand = new SignInCommand(tokenService);
         var signOutCommand = new SignOutCommand(tokenService);
 
-        var topAnimePage = new TopAnimePage(dataProvider);
-        var seasonalAnimePage = new SeasonalAnimePage(dataProvider);
-        var suggestedAnimePage = new SuggestedAnimePage(dataProvider);
+        var commandFactory = new CommandFactory(dataUpdater);
+        var animeListItemFactory = new AnimeListItemFactory(commandFactory);
 
-        var watchingPage = new UserAnimeListPage(UserAnimePageType.Watching, dataProvider);
-        var completedPage = new UserAnimeListPage(UserAnimePageType.Completed, dataProvider);
-        var onHoldPage = new UserAnimeListPage(UserAnimePageType.OnHold, dataProvider);
-        var droppedPage = new UserAnimeListPage(UserAnimePageType.Dropped, dataProvider);
-        var planToWatchPage = new UserAnimeListPage(UserAnimePageType.PlanToWatch, dataProvider);
+        var topAnimePage = new TopAnimePage(dataProvider, animeListItemFactory);
+        var seasonalAnimePage = new SeasonalAnimePage(dataProvider, animeListItemFactory);
+        var suggestedAnimePage = new SuggestedAnimePage(dataProvider, animeListItemFactory);
+
+        var watchingPage = new UserAnimeListPage(AnimeStatusType.Watching, dataProvider, animeListItemFactory);
+        var completedPage = new UserAnimeListPage(AnimeStatusType.Completed, dataProvider, animeListItemFactory);
+        var onHoldPage = new UserAnimeListPage(AnimeStatusType.OnHold, dataProvider, animeListItemFactory);
+        var droppedPage = new UserAnimeListPage(AnimeStatusType.Dropped, dataProvider, animeListItemFactory);
+        var planToWatchPage = new UserAnimeListPage(AnimeStatusType.PlanToWatch, dataProvider, animeListItemFactory);
         var userListsPage = new UserListsPage(watchingPage, completedPage, onHoldPage, droppedPage, planToWatchPage);
 
         var commandProvider = new MyAnimeListExtensionCommandsProvider(

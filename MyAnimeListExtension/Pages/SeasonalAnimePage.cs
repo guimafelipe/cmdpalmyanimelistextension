@@ -9,10 +9,12 @@ namespace MyAnimeListExtension.Pages;
 internal sealed partial class SeasonalAnimePage : ListPage
 {
     private readonly DataProvider _dataProvider;
+    private readonly AnimeListItemFactory _animeListItemFactory;
 
-    public SeasonalAnimePage(DataProvider dataProvider)
+    public SeasonalAnimePage(DataProvider dataProvider, AnimeListItemFactory animeListItemFactory)
     {
         _dataProvider = dataProvider;
+        _animeListItemFactory = animeListItemFactory;
         Icon = IconHelpers.FromRelativePath("Assets\\MALLogo.jpg");
         Title = "Animes of the Season";
     }
@@ -21,6 +23,6 @@ internal sealed partial class SeasonalAnimePage : ListPage
     {
         var res = _dataProvider.GetSeasonAnimeAsync().GetAwaiter().GetResult();
 
-        return res.Select(item => new AnimeListItem(item)).ToArray();
+        return res.Select(item => _animeListItemFactory.Create(item)).ToArray();
     }
 }

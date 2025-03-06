@@ -51,7 +51,6 @@ public sealed class OAuthClient
         });
     }
 
-
     public async Task HandleOAuthRedirection(Uri response)
     {
         var queryString = response.Query;
