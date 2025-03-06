@@ -16,14 +16,6 @@ public class AnimeContentPage : ContentPage
         _anime = anime;
         Icon = new IconInfo(anime.ImageUrl);
         Name = "View Anime information";
-        Commands = new CommandContextItem[]
-        {
-            new(new LinkCommand(anime))
-            {
-                Title = "Open in browser",
-                Subtitle = "Open the anime in the browser",
-            },
-        };
         
         Details = new Details()
         {

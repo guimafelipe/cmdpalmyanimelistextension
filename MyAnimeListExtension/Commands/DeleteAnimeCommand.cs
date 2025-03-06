@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Data;
@@ -20,19 +23,28 @@ public sealed class DeleteAnimeCommand : InvokableCommand
 
     public event EventHandler? AnimeDeleted;
 
-    public override CommandResult Invoke()
+    public override ICommandResult Invoke() => DoInvoke().GetAwaiter().GetResult();
+
+    private async Task<ICommandResult> DoInvoke()
     {
-        var result = _dataUpdater.DeleteAnimeFromMyListAsync(_anime).GetAwaiter().GetResult();
+        string message;
 
-        var message = result ?
-            $"{_anime.Title} has been deleted from your list" 
-            : $"Anime {_anime.Title} was not your list";
-
-        var toast = new ToastStatusMessage(message);
-        toast.Show();
+        try
+        {
+            await _dataUpdater.DeleteAnimeFromMyListAsync(_anime);
+            message = $"{_anime.Title} has been deleted from your list";
+        }
+        catch(HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)
+        {
+            message = $"Anime {_anime.Title} was not your list";
+        }
 
         AnimeDeleted?.Invoke(this, EventArgs.Empty);
 
-        return CommandResult.KeepOpen();
+        return CommandResult.ShowToast(new ToastArgs()
+        {
+            Message = message,
+            Result = CommandResult.KeepOpen(),
+        });
     }
 }

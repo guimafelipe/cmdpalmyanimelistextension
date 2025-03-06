@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Models;
-using MyAnimeListExtension.Pages;
 
 namespace MyAnimeListExtension.ListItems;
 

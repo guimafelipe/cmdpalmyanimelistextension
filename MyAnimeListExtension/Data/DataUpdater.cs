@@ -45,9 +45,7 @@ public sealed class DataUpdater
         Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
     }
 
-    public event EventHandler? AnimeDeleted;
-
-    public async Task<bool> DeleteAnimeFromMyListAsync(Anime anime)
+    public async Task DeleteAnimeFromMyListAsync(Anime anime)
     {
         using var client = new HttpClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
@@ -59,22 +57,7 @@ public sealed class DataUpdater
 
         var response = await client.SendAsync(request);
 
-        try
-        {
-            response.EnsureSuccessStatusCode();
-            Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
-            AnimeDeleted?.Invoke(this, EventArgs.Empty);
-            return true;
-        }
-        catch
-        {
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                Debug.WriteLine("Anime not found in list");
-                return false;
-            }
-
-            throw;
-        }
+        response.EnsureSuccessStatusCode();
+        Debug.WriteLine(response.StatusCode);
     }
 }

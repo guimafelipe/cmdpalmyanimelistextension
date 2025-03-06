@@ -1,4 +1,6 @@
-﻿using Microsoft.CommandPalette.Extensions.Toolkit;
+﻿using System.Threading.Tasks;
+using Microsoft.CommandPalette.Extensions;
+using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Data;
 using MyAnimeListExtension.Models;
 
@@ -18,9 +20,11 @@ public sealed partial class UpdateAnimeStatusCommand : InvokableCommand
         Name = $"{status}";
     }
 
-    public override CommandResult Invoke()
+    public override ICommandResult Invoke() => DoInvoke().GetAwaiter().GetResult();
+
+    private async Task<ICommandResult> DoInvoke()
     {
-        _dataUpdater.UpdateAnimeStatusAsync(_anime, _status).GetAwaiter().GetResult();
+        await _dataUpdater.UpdateAnimeStatusAsync(_anime, _status);
         var toast = new ToastStatusMessage($"Status for {_anime.Title} has been updated to {_status}");
         toast.Show();
         return CommandResult.KeepOpen();
