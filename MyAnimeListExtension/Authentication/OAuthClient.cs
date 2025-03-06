@@ -9,8 +9,6 @@ namespace MyAnimeListExtension.Authentication;
 
 public sealed class OAuthClient
 {
-    public string AccessToken { get; private set; } = string.Empty;
-
     public event EventHandler<OAuthEventArgs>? AccessTokenChanged;
 
     public OAuthClient()
@@ -49,6 +47,38 @@ public sealed class OAuthClient
                 Debug.WriteLine($"Uri Launch failed");
             }
         });
+    }
+
+    public async Task RefreshAccessToken(string refreshToken)
+    {
+        // Use the code to get the access token
+        var tokenUri = CreateRequestTokenUri();
+
+        var request = new HttpRequestMessage(HttpMethod.Post, tokenUri)
+        {
+            Content =
+            new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("grant_type", "refresh_token"),
+                new KeyValuePair<string, string>("client_id", Environment.GetEnvironmentVariable("MAL_CLIENT_ID")!),
+                new KeyValuePair<string, string>("refresh_token", refreshToken),
+            }),
+        };
+
+        request.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/x-www-form-urlencoded");
+        using var client = new HttpClient();
+
+        var responseMessage = await client.SendAsync(request);
+        responseMessage.EnsureSuccessStatusCode();
+
+        var responseContent = await responseMessage.Content.ReadAsStringAsync();
+        var responseJson = JsonDocument.Parse(responseContent);
+
+        var accessToken = responseJson.RootElement.GetProperty("access_token").GetString();
+        var newRefreshToken = responseJson.RootElement.GetProperty("refresh_token").GetString();
+        var expiresIn = responseJson.RootElement.GetProperty("expires_in").GetInt32();
+
+        AccessTokenChanged?.Invoke(null, new OAuthEventArgs(accessToken, refreshToken));
     }
 
     public async Task HandleOAuthRedirection(Uri response)
@@ -106,7 +136,6 @@ public sealed class OAuthClient
             var accessToken = responseJson.RootElement.GetProperty("access_token").GetString();
             var refreshToken = responseJson.RootElement.GetProperty("refresh_token").GetString();
             var expiresIn = responseJson.RootElement.GetProperty("expires_in").GetInt32();
-            AccessToken = accessToken!;
 
             Debug.WriteLine($"Access Token: {accessToken}");
             Debug.WriteLine($"Refresh Token: {refreshToken}");

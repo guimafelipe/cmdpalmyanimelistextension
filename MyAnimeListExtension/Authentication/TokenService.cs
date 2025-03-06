@@ -51,6 +51,18 @@ public sealed class TokenService
         LoginStateChanged?.Invoke(this, false);
     }
 
+    public void StartRefreshAccessToken()
+    {
+        var refreshToken = _credentialVault.GetCredentials("MyAnimeListRefresh")?.Password;
+        if (refreshToken == null)
+        {
+            throw new InvalidOperationException("No refresh token found");
+        }
+
+        _oAuthClient.AccessTokenChanged += OAuthTokenEventHandler;
+        _ = _oAuthClient.RefreshAccessToken(refreshToken);
+    }
+
     public void OAuthTokenEventHandler(object? sender, OAuthEventArgs e)
     {
         if(e.Error != null)
