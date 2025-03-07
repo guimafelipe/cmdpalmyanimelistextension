@@ -50,6 +50,7 @@ public sealed class AnimeListItemFactory
 
             var deleteCommand = _commandFactory.CreateDeleteAnimeCommand(anime);
             deleteCommand.AnimeDeleted += animeListItem.OnAnimeDeleted;
+            deleteCommand.AnimeDeleted += contentPage.OnAnimeDeleted;
 
             moreCommands.Add(new(deleteCommand));
             pageCommands.Add(new(deleteCommand));

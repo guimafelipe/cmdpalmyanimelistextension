@@ -67,7 +67,6 @@ internal sealed class DataProvider
     private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles," +
         "genres,num_episodes,mean,media_type,studios,num_list_users,start_season,rank,my_list_status";
 
-#pragma warning disable CA1822 // Mark members as static
     private List<Anime> GetFromJsonData(string? json)
     {
         var res = new List<Anime>();
@@ -136,16 +135,10 @@ internal sealed class DataProvider
         var uriString = GetUriWithQuery("anime/suggestions", query);
 
         var response = await client.GetAsync(uriString);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
-        }
+
+        response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
-
-        var jsonElement = JsonSerializer.Deserialize<JsonElement>(jsonResponse);
-        var prettyJson = JsonSerializer.Serialize(jsonElement, _jsonSerializerOptions);
-        Debug.WriteLine(prettyJson);
 
         return GetFromJsonData(jsonResponse);
     }
@@ -153,6 +146,11 @@ internal sealed class DataProvider
     public async Task<List<Anime>> GetAnimeRankingAsync()
     {
         using var client = GetClient();
+
+        if (_tokenService.IsLoggedIn())
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
+        }
 
         var query = new Dictionary<string, string>
         {
@@ -163,10 +161,8 @@ internal sealed class DataProvider
         var uriString = GetUriWithQuery("anime/ranking", query);
 
         var response = await client.GetAsync(uriString);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
-        }
+
+        response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
@@ -190,6 +186,11 @@ internal sealed class DataProvider
     {
         using var client = GetClient();
 
+        if (_tokenService.IsLoggedIn())
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
+        }
+
         var query = new Dictionary<string, string>
         {
             { "sort", "anime_num_list_users" },
@@ -203,10 +204,8 @@ internal sealed class DataProvider
         var uriString = GetUriWithQuery($"anime/season/{year}/{season}", query);
 
         var response = await client.GetAsync(uriString);
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
-        }
+
+        response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
 
@@ -216,8 +215,8 @@ internal sealed class DataProvider
     public async Task<List<Anime>> GetUserAnimeListAsync(AnimeStatusType type)
     {
         using var client = GetClient();
-
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
+
         var query = new Dictionary<string, string>
         {
             { "fields", QueryFields },
@@ -228,12 +227,10 @@ internal sealed class DataProvider
 
         var uriString = GetUriWithQuery($"users/@me/animelist", query);
         Debug.WriteLine($"Requesting: {uriString}");
+
         var response = await client.GetAsync(uriString);
 
-        if (!response.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Request failed with status code {response.StatusCode}");
-        }
+        response.EnsureSuccessStatusCode();
 
         var jsonResponse = await response.Content.ReadAsStringAsync();
 

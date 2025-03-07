@@ -1,16 +1,18 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Models;
+using MyAnimeListExtension.Pages.Forms;
 
 namespace MyAnimeListExtension.Pages;
 
 public class AnimeContentPage : ContentPage
 {
     private readonly Anime _anime;
-    private readonly IFormContent _form;
+    private readonly AnimeUpdateForm _form;
 
-    public AnimeContentPage(Anime anime, IFormContent form)
+    public AnimeContentPage(Anime anime, AnimeUpdateForm form)
     {
         _form = form;
         _anime = anime;
@@ -65,18 +67,26 @@ public class AnimeContentPage : ContentPage
         };
     }
 
+    public void OnAnimeDeleted(object? source, EventArgs e)
+    {
+        _form.UpdateFormTemplate();
+        RaiseItemsChanged(0);
+    }
+
     public override IContent[] GetContent()
     {
         var markdown = new MarkdownContent
         {
-            Body = $$"""
-            # {{_anime.Title}}
-            ## {{_anime.EnglishTitle}}
-
-            {{_anime.Synopsis}}
-            """
+            Body = $"# {_anime.Title}\n"
         };
 
-        return [markdown, _form];
+        if (!string.IsNullOrEmpty(_anime.EnglishTitle))
+        {
+            markdown.Body += $"## {_anime.EnglishTitle}\n";
+        }
+
+        markdown.Body += $"{_anime.Synopsis}\n";
+
+        return [_form, markdown];
     }
 }

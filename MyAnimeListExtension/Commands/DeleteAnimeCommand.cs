@@ -34,6 +34,9 @@ public sealed class DeleteAnimeCommand : InvokableCommand
         try
         {
             await _dataUpdater.DeleteAnimeFromMyListAsync(_anime);
+            _anime.Status = AnimeStatusType.Unknown;
+            _anime.Episodes = 0;
+            _anime.Score = 0;
             message = $"{_anime.Title} has been deleted from your list";
         }
         catch(HttpRequestException e) when (e.StatusCode == HttpStatusCode.NotFound)

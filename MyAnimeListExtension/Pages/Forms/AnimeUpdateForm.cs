@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Text.Json.Nodes;
@@ -17,17 +16,21 @@ public sealed class AnimeUpdateForm : FormContent
 {
     private readonly Anime _anime;
     private readonly DataUpdater _dataUpdater;
-    private readonly Dictionary<string, string> _templateSubstituitions;
 
     public AnimeUpdateForm(Anime anime, DataUpdater dataUpdater)
     {
         _anime = anime;
         _dataUpdater = dataUpdater;
 
+        UpdateFormTemplate();
+    }
+
+    private Dictionary<string, string> GenerateTemplateSubstituitions(Anime anime)
+    {
         // If status is set, the anime is on the list
         if (anime.Status != AnimeStatusType.Unknown)
         {
-            _templateSubstituitions = new()
+            return new()
             {
                 { "{{total_episodes}}", $"{_anime.Episodes}" },
                 { "{{num_episodes_watched}}", $"{_anime.NumEpisodesWatched}" },
@@ -37,7 +40,7 @@ public sealed class AnimeUpdateForm : FormContent
         }
         else
         {
-            _templateSubstituitions = new()
+            return new()
             {
                 { "{{total_episodes}}", $"{_anime.Episodes}" },
                 { "{{num_episodes_watched}}", "0" },
@@ -45,8 +48,6 @@ public sealed class AnimeUpdateForm : FormContent
                 { "{{status}}", "" },
             };
         }
-
-        TemplateJson = LoadTemplate();
     }
 
     public override ICommandResult SubmitForm(string inputs) => DoSubmitForm(inputs).GetAwaiter().GetResult();
@@ -98,20 +99,36 @@ public sealed class AnimeUpdateForm : FormContent
 
         toast.Show();
 
+        if (!string.IsNullOrEmpty(args.Status))
+        {
+            _anime.Status = DataHelper.GetAnimeStatusTypeFromString(args.Status!);
+        }
+
+        _anime.Score = args.Score ?? 0;
+        _anime.NumEpisodesWatched = args.NumEpisodesWatched ?? 0;
+
+        UpdateFormTemplate();
+
         return CommandResult.KeepOpen();
     }
 
-    private string LoadTemplate()
+    public void UpdateFormTemplate()
+    {
+        var templateSubstituitions = GenerateTemplateSubstituitions(_anime);
+        TemplateJson = LoadTemplate(templateSubstituitions);
+    }
+
+    private static string LoadTemplate(Dictionary<string, string> templateSubstituitions)
     {
         var path = Path.Combine(AppContext.BaseDirectory, "Pages", "Forms", "Templates", $"AnimeUpdateTemplate.json");
         var template = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
-        template = FillInTemplate(template);
+        template = FillInTemplate(template, templateSubstituitions);
         return template;
     }
 
-    private string FillInTemplate(string template)
+    private static string FillInTemplate(string template, Dictionary<string, string> templateSubstituitions)
     {
-        foreach (var substituition in _templateSubstituitions)
+        foreach (var substituition in templateSubstituitions)
         {
             template = template.Replace(substituition.Key, substituition.Value);
         }
