@@ -110,7 +110,8 @@
             {
               "type": "Input.Number",
               "id": "episodes",
-              "label": "Episodes"
+              "label": "Episodes",
+              "value": {{num_episodes_watched}}
             }
           ]
         }
