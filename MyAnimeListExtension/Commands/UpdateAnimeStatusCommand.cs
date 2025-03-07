@@ -39,7 +39,7 @@ public sealed partial class UpdateAnimeStatusCommand : InvokableCommand
     private async Task<ICommandResult> DoInvoke()
     {
         await _dataUpdater.UpdateAnimeStatusAsync(_anime, _status);
-        var toast = new ToastStatusMessage($"Status for {_anime.Title} has been updated to {_status}");
+        var toast = new ToastStatusMessage($"Status for {_anime.Title} has been updated to {GetNameForStatus(_status)}");
         toast.Show();
         return CommandResult.KeepOpen();
     }

@@ -42,11 +42,9 @@ public sealed class DeleteAnimeCommand : InvokableCommand
         }
 
         AnimeDeleted?.Invoke(this, EventArgs.Empty);
+        var toast = new ToastStatusMessage(message);
+        toast.Show();
 
-        return CommandResult.ShowToast(new ToastArgs()
-        {
-            Message = message,
-            Result = CommandResult.KeepOpen(),
-        });
+        return CommandResult.KeepOpen();
     }
 }
