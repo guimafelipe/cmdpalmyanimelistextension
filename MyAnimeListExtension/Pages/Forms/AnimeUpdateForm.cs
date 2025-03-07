@@ -24,6 +24,7 @@ public sealed class AnimeUpdateForm : FormContent
         _anime = anime;
         _dataUpdater = dataUpdater;
 
+        // If status is set, the anime is on the list
         if (anime.Status != AnimeStatusType.Unknown)
         {
             _templateSubstituitions = new()
@@ -40,8 +41,8 @@ public sealed class AnimeUpdateForm : FormContent
             {
                 { "{{total_episodes}}", $"{_anime.Episodes}" },
                 { "{{num_episodes_watched}}", "0" },
-                { "{{score}}", "1" },
-                { "{{status}}", "dropped" },
+                { "{{score}}", "" },
+                { "{{status}}", "" },
             };
         }
 
@@ -62,20 +63,26 @@ public sealed class AnimeUpdateForm : FormContent
 
         var args = new UpdateAnimeStatusArgs();
 
-        if (!int.TryParse(jsonNode!["episodes"]!.ToString(), out var numEpisodesWatched) || !ValidateEpisodes(numEpisodesWatched))
+        var episodesWatchedString = jsonNode!["episodes"]!.ToString();
+
+        if (episodesWatchedString != string.Empty)
         {
-            var toastInvalid = new ToastStatusMessage(new StatusMessage()
+            if (!int.TryParse(episodesWatchedString, out var numEpisodesWatched) || !ValidateEpisodes(numEpisodesWatched))
             {
-                Message = $"Please enter a valid number of episodes watched (between 0 and {_anime.Episodes}).",
-                State = MessageState.Error,
-            });
-            toastInvalid.Show();
-            return CommandResult.KeepOpen();
+                var toastInvalid = new ToastStatusMessage(new StatusMessage()
+                {
+                    Message = $"Please enter a valid number of episodes watched (between 0 and {_anime.Episodes}).",
+                    State = MessageState.Error,
+                });
+                toastInvalid.Show();
+                return CommandResult.KeepOpen();
+            }
+
+            args.NumEpisodesWatched = numEpisodesWatched;
         }
 
-        args.NumEpisodesWatched = numEpisodesWatched;
-
-        if (int.TryParse(jsonNode!["score"]!.ToString(), out var score))
+        var scoreString = jsonNode!["score"]!.ToString();
+        if (scoreString != string.Empty && int.TryParse(scoreString, out var score))
         {
             args.Score = score;
         }
@@ -99,7 +106,6 @@ public sealed class AnimeUpdateForm : FormContent
         var path = Path.Combine(AppContext.BaseDirectory, "Pages", "Forms", "Templates", $"AnimeUpdateTemplate.json");
         var template = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
         template = FillInTemplate(template);
-        Debug.WriteLine(template);
         return template;
     }
 
