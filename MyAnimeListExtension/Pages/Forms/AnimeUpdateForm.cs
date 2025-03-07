@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
@@ -37,7 +39,7 @@ public sealed class AnimeUpdateForm : FormContent
             _templateSubstituitions = new()
             {
                 { "{{total_episodes}}", $"{_anime.Episodes}" },
-                { "{{num_episodes_watched}}", "1" },
+                { "{{num_episodes_watched}}", "0" },
                 { "{{score}}", "1" },
                 { "{{status}}", "dropped" },
             };
@@ -48,12 +50,46 @@ public sealed class AnimeUpdateForm : FormContent
 
     public override ICommandResult SubmitForm(string inputs) => DoSubmitForm(inputs).GetAwaiter().GetResult();
 
-#pragma warning disable CA1822 // Mark members as static
+    private bool ValidateEpisodes(int episodes)
+    {
+        return episodes >= 0 && episodes <= _anime.Episodes;
+    }
+
     private async Task<ICommandResult> DoSubmitForm(string inputs)
     {
         Debug.WriteLine(inputs);
+        var jsonNode = JsonNode.Parse(inputs);
 
-        await Task.CompletedTask;
+        var args = new UpdateAnimeStatusArgs();
+
+        if (!int.TryParse(jsonNode!["episodes"]!.ToString(), out var numEpisodesWatched) || !ValidateEpisodes(numEpisodesWatched))
+        {
+            var toastInvalid = new ToastStatusMessage(new StatusMessage()
+            {
+                Message = $"Please enter a valid number of episodes watched (between 0 and {_anime.Episodes}).",
+                State = MessageState.Error,
+            });
+            toastInvalid.Show();
+            return CommandResult.KeepOpen();
+        }
+
+        args.NumEpisodesWatched = numEpisodesWatched;
+
+        if (int.TryParse(jsonNode!["score"]!.ToString(), out var score))
+        {
+            args.Score = score;
+        }
+
+        args.Status = jsonNode!["status"]?.ToString();
+
+        await _dataUpdater.UpdateAnimeStatusAsync(_anime, args);
+
+        var toast = new ToastStatusMessage(new StatusMessage()
+        {
+            Message = "Anime status updated successfully.",
+        });
+
+        toast.Show();
 
         return CommandResult.KeepOpen();
     }

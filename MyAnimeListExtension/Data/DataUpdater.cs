@@ -54,17 +54,17 @@ public sealed class DataUpdater
         Debug.WriteLine($"Updating status for {anime.Title} to {args}");
 
         var requestDict = new Dictionary<string, string>();
-        if (args.Status != AnimeStatusType.Unknown)
+        if (args.Status != null)
         {
-            requestDict.Add("status", DataHelper.GetStringForUserAnimePageType(args.Status));
+            requestDict.Add("status", args.Status);
         }
 
-        if (args.Score != 0)
+        if (args.Score != null)
         {
             requestDict.Add("score", $"{args.Score}");
         }
 
-        if (args.NumEpisodesWatched != 0)
+        if (args.NumEpisodesWatched != null)
         {
             requestDict.Add("num_watched_episodes", $"{args.NumEpisodesWatched}");
         }

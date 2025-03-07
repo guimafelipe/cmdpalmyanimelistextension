@@ -43,7 +43,8 @@
               ],
               "id": "status",
               "placeholder": "Add to List",
-              "label": "Status"
+              "label": "Status",
+              "value": "{{status}}"
             }
           ]
         },
@@ -97,7 +98,8 @@
               ],
               "id": "score",
               "placeholder": "Select",
-              "label": "Score"
+              "label": "Score",
+              "value": "{{score}}"
             }
           ]
         },
