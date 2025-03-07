@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Models;
 using MyAnimeListExtension.Pages.Forms;
 
@@ -74,7 +75,7 @@ public class AnimeContentPage : ContentPage
         RaiseItemsChanged(0);
     }
 
-    public void OnAnimeDeleted(object? source, EventArgs e)
+    public void OnAnimeStatusUpdated(object? source, AnimeStatusUpdatedEventArgs e)
     {
         _form.UpdateFormTemplate();
     }

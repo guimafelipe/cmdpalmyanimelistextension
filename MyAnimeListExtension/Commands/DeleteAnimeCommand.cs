@@ -23,7 +23,7 @@ public sealed class DeleteAnimeCommand : InvokableCommand
         Icon = new IconInfo("\uE74D");
     }
 
-    public event EventHandler? AnimeDeleted;
+    public event EventHandler<AnimeStatusUpdatedEventArgs>? AnimeDeleted;
 
     public override ICommandResult Invoke() => DoInvoke().GetAwaiter().GetResult();
 
@@ -44,7 +44,7 @@ public sealed class DeleteAnimeCommand : InvokableCommand
             message = $"Anime {_anime.Title} was not your list";
         }
 
-        AnimeDeleted?.Invoke(this, EventArgs.Empty);
+        AnimeDeleted?.Invoke(this, new AnimeStatusUpdatedEventArgs(AnimeStatusType.Unknown));
         var toast = new ToastStatusMessage(message);
         toast.Show();
 

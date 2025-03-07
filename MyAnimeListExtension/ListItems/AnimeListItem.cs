@@ -11,11 +11,11 @@ public sealed partial class AnimeListItem : ListItem
 {
     private const int _maxNumberOfTags = 4;
 
-    public event EventHandler? AnimeDeleted;
+    public event EventHandler<AnimeStatusUpdatedEventArgs>? AnimeStatusUpdated;
 
-    public void OnAnimeDeleted(object? source, EventArgs e)
+    public void OnAnimeStatusUpdated(object? source, AnimeStatusUpdatedEventArgs e)
     {
-        AnimeDeleted?.Invoke(this, EventArgs.Empty);
+        AnimeStatusUpdated?.Invoke(source, e);
     }
 
     public AnimeListItem(Anime anime, ICommand command) : base(command)

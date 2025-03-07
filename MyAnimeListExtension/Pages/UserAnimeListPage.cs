@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Data;
 using MyAnimeListExtension.ListItems;
 using MyAnimeListExtension.Models;
@@ -42,12 +43,12 @@ internal sealed partial class UserAnimeListPage : ListPage
         return res.Select(item =>
         {
             var listItem = _animeListItemFactory.Create(item);
-            listItem.AnimeDeleted += OnAnimeDeleted;
+            listItem.AnimeStatusUpdated += OnAnimeStatusUpdated;
             return listItem;
         }).ToArray();
     }
 
-    private void OnAnimeDeleted(object? sender, EventArgs e)
+    private void OnAnimeStatusUpdated(object? sender, AnimeStatusUpdatedEventArgs e)
     {
         RaiseItemsChanged(0);
     }

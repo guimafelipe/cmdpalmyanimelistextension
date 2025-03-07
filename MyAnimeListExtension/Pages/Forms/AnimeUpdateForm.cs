@@ -16,6 +16,7 @@ public sealed class AnimeUpdateForm : FormContent
 {
     private readonly Anime _anime;
     private readonly DataUpdater _dataUpdater;
+    private string _cachedTemplate { get; set; } = string.Empty;
 
     public AnimeUpdateForm(Anime anime, DataUpdater dataUpdater)
     {
@@ -119,12 +120,18 @@ public sealed class AnimeUpdateForm : FormContent
         OnPropertyChanged(nameof(TemplateJson));
     }
 
-    private static string LoadTemplate(Dictionary<string, string> templateSubstituitions)
+    private string LoadTemplate(Dictionary<string, string> templateSubstituitions)
     {
+        // To limit the number of file reads, cache the template
+        if (!string.IsNullOrEmpty(_cachedTemplate))
+        {
+            return FillInTemplate(_cachedTemplate, templateSubstituitions);
+        }
+
         var path = Path.Combine(AppContext.BaseDirectory, "Pages", "Forms", "Templates", $"AnimeUpdateTemplate.json");
-        var template = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
-        template = FillInTemplate(template, templateSubstituitions);
-        return template;
+        _cachedTemplate = File.ReadAllText(path, Encoding.Default) ?? throw new FileNotFoundException(path);
+
+        return FillInTemplate(_cachedTemplate, templateSubstituitions);
     }
 
     private static string FillInTemplate(string template, Dictionary<string, string> templateSubstituitions)
