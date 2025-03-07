@@ -2,7 +2,7 @@
 
 public enum AnimeStatusType
 {
-    Unkown,
+    Unknown,
     Watching,
     Completed,
     OnHold,

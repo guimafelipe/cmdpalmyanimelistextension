@@ -1,8 +1,6 @@
-﻿using System.Diagnostics;
-using System.Linq;
+﻿using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
-using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Models;
 
 namespace MyAnimeListExtension.Pages;
@@ -10,9 +8,11 @@ namespace MyAnimeListExtension.Pages;
 public class AnimeContentPage : ContentPage
 {
     private readonly Anime _anime;
+    private readonly IFormContent _form;
 
-    public AnimeContentPage(Anime anime)
+    public AnimeContentPage(Anime anime, IFormContent form)
     {
+        _form = form;
         _anime = anime;
         Icon = new IconInfo(anime.ImageUrl);
         Name = "View Anime information";
@@ -67,7 +67,7 @@ public class AnimeContentPage : ContentPage
 
     public override IContent[] GetContent()
     {
-        var template = new MarkdownContent
+        var markdown = new MarkdownContent
         {
             Body = $$"""
             # {{_anime.Title}}
@@ -77,6 +77,6 @@ public class AnimeContentPage : ContentPage
             """
         };
 
-        return [template];
+        return [markdown, _form];
     }
 }

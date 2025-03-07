@@ -99,7 +99,7 @@ public class Program
         var signOutCommand = new SignOutCommand(tokenService);
 
         var commandFactory = new CommandFactory(dataUpdater);
-        var animeListItemFactory = new AnimeListItemFactory(commandFactory, tokenService);
+        var animeListItemFactory = new AnimeListItemFactory(commandFactory, tokenService, dataUpdater);
 
         var topAnimePage = new TopAnimePage(dataProvider, animeListItemFactory);
         var seasonalAnimePage = new SeasonalAnimePage(dataProvider, animeListItemFactory);

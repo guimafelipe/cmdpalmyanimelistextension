@@ -44,6 +44,44 @@ public sealed class DataUpdater
 
         Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
     }
+    public async Task UpdateAnimeStatusAsync(Anime anime, UpdateAnimeStatusArgs args)
+    {
+        using var client = new HttpClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _tokenService.GetAccessToken());
+
+        var uri = new Uri($"https://api.myanimelist.net/v2/anime/{anime.Id}/my_list_status");
+
+        Debug.WriteLine($"Updating status for {anime.Title} to {args}");
+
+        var requestDict = new Dictionary<string, string>();
+        if (args.Status != AnimeStatusType.Unknown)
+        {
+            requestDict.Add("status", DataHelper.GetStringForUserAnimePageType(args.Status));
+        }
+
+        if (args.Score != 0)
+        {
+            requestDict.Add("score", $"{args.Score}");
+        }
+
+        if (args.NumEpisodesWatched != 0)
+        {
+            requestDict.Add("num_watched_episodes", $"{args.NumEpisodesWatched}");
+        }
+
+        var request = new HttpRequestMessage(HttpMethod.Patch, uri)
+        {
+            Content = new FormUrlEncodedContent(requestDict)
+        };
+
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/x-www-form-urlencoded");
+
+        var response = await client.SendAsync(request);
+
+        response.EnsureSuccessStatusCode();
+
+        Debug.WriteLine(response.Content.ReadAsStringAsync().Result);
+    }
 
     public async Task DeleteAnimeFromMyListAsync(Anime anime)
     {

@@ -22,4 +22,7 @@ public class Anime
     public int Rank { get; set; }
     public double Mean { get; set; }
     public int NumListUsers { get; set; }
+    public AnimeStatusType Status { get; set; } = AnimeStatusType.Unknown;
+    public int Score { get; set; }
+    public int NumEpisodesWatched { get; set; }
 }

@@ -4,8 +4,10 @@ using System.Linq;
 using Microsoft.CommandPalette.Extensions.Toolkit;
 using MyAnimeListExtension.Authentication;
 using MyAnimeListExtension.Commands;
+using MyAnimeListExtension.Data;
 using MyAnimeListExtension.Models;
 using MyAnimeListExtension.Pages;
+using MyAnimeListExtension.Pages.Forms;
 
 namespace MyAnimeListExtension.ListItems;
 
@@ -13,11 +15,13 @@ public sealed class AnimeListItemFactory
 {
     private readonly CommandFactory _commandFactory;
     private readonly TokenService _tokenService;
+    private readonly DataUpdater _dataUpdater;
 
-    public AnimeListItemFactory(CommandFactory commandFactory, TokenService tokenService)
+    public AnimeListItemFactory(CommandFactory commandFactory, TokenService tokenService, DataUpdater dataUpdater)
     {
         _commandFactory = commandFactory;
         _tokenService = tokenService;
+        _dataUpdater = dataUpdater;
     }
 
     public AnimeListItem Create(Anime anime)
@@ -25,7 +29,8 @@ public sealed class AnimeListItemFactory
         var linkCommand = new LinkCommand(anime);
         var animeListItem = new AnimeListItem(anime, linkCommand);
 
-        var contentPage = new AnimeContentPage(anime);
+        var form = new AnimeUpdateForm(anime, _dataUpdater);
+        var contentPage = new AnimeContentPage(anime, form);
 
         var pageCommands = new List<CommandContextItem>()
         {

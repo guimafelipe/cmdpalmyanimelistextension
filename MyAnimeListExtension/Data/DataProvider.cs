@@ -65,7 +65,7 @@ internal sealed class DataProvider
     }
 
     private static string QueryFields => "id,title,main_picture,synopsis,alternative_titles," +
-        "genres,num_episodes,mean,media_type,studios,num_list_users,start_season,rank";
+        "genres,num_episodes,mean,media_type,studios,num_list_users,start_season,rank,my_list_status";
 
 #pragma warning disable CA1822 // Mark members as static
     private List<Anime> GetFromJsonData(string? json)
@@ -98,6 +98,13 @@ internal sealed class DataProvider
                 StartSeason = item.GetProperty("node").GetProperty("start_season").GetProperty("season").GetString() ?? string.Empty,
                 StartYear = item.GetProperty("node").GetProperty("start_season").GetProperty("year").GetInt32(),
             };
+
+            if (_tokenService.IsLoggedIn() && item.GetProperty("node").TryGetProperty("my_list_status", out var myListStatus))
+            {
+                anime.Status = DataHelper.GetAnimeStatusTypeFromString(myListStatus.GetProperty("status").GetString()!);
+                anime.Score = myListStatus.GetProperty("score").GetInt32();
+                anime.NumEpisodesWatched = myListStatus.GetProperty("num_episodes_watched").GetInt32();
+            }
 
             if (item.GetProperty("node").TryGetProperty("rank", out var rank))
             {
