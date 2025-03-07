@@ -116,6 +116,7 @@ public sealed class AnimeUpdateForm : FormContent
     {
         var templateSubstituitions = GenerateTemplateSubstituitions(_anime);
         TemplateJson = LoadTemplate(templateSubstituitions);
+        OnPropertyChanged(nameof(TemplateJson));
     }
 
     private static string LoadTemplate(Dictionary<string, string> templateSubstituitions)

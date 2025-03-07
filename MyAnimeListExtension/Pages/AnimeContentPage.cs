@@ -18,7 +18,9 @@ public class AnimeContentPage : ContentPage
         _anime = anime;
         Icon = new IconInfo(anime.ImageUrl);
         Name = "View Anime information";
-        
+
+        _form.PropChanged += OnFormPropChanged;
+
         Details = new Details()
         {
             HeroImage = new IconInfo(anime.ImageUrl),
@@ -67,10 +69,14 @@ public class AnimeContentPage : ContentPage
         };
     }
 
+    public void OnFormPropChanged(object? source, IPropChangedEventArgs e)
+    {
+        RaiseItemsChanged(0);
+    }
+
     public void OnAnimeDeleted(object? source, EventArgs e)
     {
         _form.UpdateFormTemplate();
-        RaiseItemsChanged(0);
     }
 
     public override IContent[] GetContent()
