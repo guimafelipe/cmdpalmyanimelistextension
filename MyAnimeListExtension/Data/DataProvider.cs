@@ -129,6 +129,7 @@ internal sealed class DataProvider
 
         var query = new Dictionary<string, string>
         {
+            { "limit", "20" },
             { "fields", QueryFields },
         };
 

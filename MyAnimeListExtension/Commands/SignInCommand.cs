@@ -11,6 +11,7 @@ internal sealed partial class SignInCommand : InvokableCommand
     internal SignInCommand(TokenService tokenService)
     {
         Name = "Sign in to My Anime List";
+        Icon = IconHelpers.FromRelativePath("Assets\\MALLogo.jpg");
         _tokenService = tokenService;
     }
 

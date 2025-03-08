@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.CommandPalette.Extensions;
 using Microsoft.CommandPalette.Extensions.Toolkit;
+using MyAnimeListExtension.Authentication;
 using MyAnimeListExtension.Commands;
 using MyAnimeListExtension.Models;
 using MyAnimeListExtension.Pages.Forms;
@@ -12,11 +13,13 @@ public class AnimeContentPage : ContentPage
 {
     private readonly Anime _anime;
     private readonly AnimeUpdateForm _form;
+    private readonly TokenService _tokenService;
 
-    public AnimeContentPage(Anime anime, AnimeUpdateForm form)
+    public AnimeContentPage(Anime anime, AnimeUpdateForm form, TokenService tokenService)
     {
         _form = form;
         _anime = anime;
+        _tokenService = tokenService;
         Icon = new IconInfo(anime.ImageUrl);
         Name = "View Anime information";
 
@@ -93,6 +96,11 @@ public class AnimeContentPage : ContentPage
         }
 
         markdown.Body += $"{_anime.Synopsis}\n";
+
+        if (!_tokenService.IsLoggedIn())
+        {
+            return [markdown];
+        }
 
         return [_form, markdown];
     }

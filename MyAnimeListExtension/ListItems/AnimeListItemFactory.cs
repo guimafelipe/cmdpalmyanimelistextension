@@ -30,7 +30,7 @@ public sealed class AnimeListItemFactory
         var animeListItem = new AnimeListItem(anime, linkCommand);
 
         var form = new AnimeUpdateForm(anime, _dataUpdater);
-        var contentPage = new AnimeContentPage(anime, form);
+        var contentPage = new AnimeContentPage(anime, form, _tokenService);
 
         var pageCommands = new List<CommandContextItem>()
         {
