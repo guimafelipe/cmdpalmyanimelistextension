@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "MyAnimeListExtension (Package)": {
+      "commandName": "MsixPackage",
+      "commandLineArgs": "-RegisterProcessAsComServer",
+      "doNotLaunchApp": true
+    },
+    "MyAnimeListExtension (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
